@@ -6,23 +6,16 @@
 #define HIGHPRIORITY 1 
 
 // Process Struct Essentially
-typedef struct PTEntry {
+typedef struct Process{
     char name[MAXNAME];
     int PID;
     int parentPID;
     int priority;
     int status; 
-} PTEntry;
+} Process;
 
-// Just a basic LL for the Queue of each priority
-typedef struct PQueue {
-    PTEntry* head;
-    PTEntry* tail;
-    int size; 
-} PQueue;
-
-PTEntry ProcessTable[MAXPROC];
-PTEntry* currProcess;
+Process ProcessTable[MAXPROC];
+Process* currProcess;
 
 void phase1_init(void) {
 
@@ -44,6 +37,12 @@ int join(int *status) {
 void quit(int status, int switchToPid) {
 
 }
+
+void dumpProcesses(void) {
+
+}
+
+// phase1a
 
 void TEMP_switchTo(int pid) {
 
