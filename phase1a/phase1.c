@@ -12,6 +12,13 @@ typedef struct Process{
     int parentPID;
     int priority;
     int status; 
+
+    // every process needs a stack allocated to it in mem, so this is where we
+    // have it
+    void* stack;
+    int stSize; 
+
+
     USLOSS_Context context;
 } Process;
 
@@ -22,20 +29,20 @@ USLOSS_Context context;
 int (*startFunc) (char*);
 
 void phase1_init(void) {
-
+    // set currPrices to the init, switch to it
+    TEMP_switchTo(0);
 }
 
 void startProcesses(void) {
-
     // need to make a context
-    USLOSS_ContextInit()
+    USLOSS_ContextInit(&ProcessTable[i].context, ProcessTable[i].stack, ProcessTable[i].stSize, NULL, trampoline)
 }
  
 int fork1(char *name, int(*func)(char *), char *arg,
                   int stacksize, int priority) {
     
     // fork makes a process, so we call context init here as well
-    USLOSS_ContextInit();
+    USLOSS_ContextInit(&ProcessTable[i].context, ProcessTable[i].stack, ProcessTable[i].stSize, NULL, trampoline);
     return 0;
 }
 
@@ -71,11 +78,15 @@ void print_process(Process proc) {
 // phase1a
 
 void TEMP_switchTo(int newpid) {
+    // no old process, esentially should only happen when we start, to 
+    // switch to init
+    if (pid == -1) {
+        USLOSS_ContextSwitch(NULL, &CurrProcess->context);
+    }
     // assuming that pid corresponds to the index in the PTable
     Process* oldProc = CurrProcess;
     CurrProcess = ProcessTable[newpid];
     USLOSS_ContextSwitch(&oldProc->context, &CurrProcess->context);
-
 }
 
 // Special Processes
@@ -112,6 +123,7 @@ void kernelCheck(char* proc) {
     }
 }
 
+// wrapper func to call our other funcs, esp for process in contextInit
 void trampoline() {
 
 }
