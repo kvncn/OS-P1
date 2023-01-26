@@ -54,6 +54,8 @@ void TEMP_switchTo(int newpid);
 void kernelCheck(char* proc);
 void trampoline();
 void print_process(Process proc);
+void disableInterrupts();
+void enableInterrupts();
 
 // processes
 int init(char* usloss);
@@ -81,7 +83,7 @@ void startProcesses(void) {
 }
  
 int fork1(char *name, int(*func)(char *), char *arg, int stacksize, int priority) {
-    kernelCheck("fork1");
+    kernelCheck("fork1");	
     
     // fork makes a process, so we call context init here as well
     USLOSS_ContextInit(&ProcessTable[i].context, ProcessTable[i].stack, 
@@ -239,4 +241,14 @@ void trampoline() {
     // quit on it, 1a will never return? so do we need to do it??? prob not for
     // 1a
     quit(res, CurrProcess->parentPID);
+}
+
+void disableInterrupts() {
+	int currPSR = USLOSS_PSRGet();
+	int res = USLOSS_PsrSet(currPSR & ~USLOSS_PSR_CURRENT_INT);
+}
+
+void enableInterrupts() {
+	int currPSR = USLOSS_PSRGet();
+	int res = USLOSS_PsrSet(currPSR | ~USLOSS_PSR_CURRENT_INT);
 }
