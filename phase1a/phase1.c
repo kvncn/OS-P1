@@ -56,7 +56,7 @@ void phase1_init(void) {
 
 void startProcesses(void) {
     // need to make a context
-    USLOSS_ContextInit(&ProcessTable[i].context, ProcessTable[i].stack, ProcessTable[i].stSize, NULL, trampoline)
+    USLOSS_ContextInit(&ProcessTable[i].context, ProcessTable[i].stack, ProcessTable[i].stSize, NULL, trampoline);
 }
  
 int fork1(char *name, int(*func)(char *), char *arg, int stacksize, int priority) {
