@@ -84,15 +84,21 @@ void startProcesses(void) {
  
 int fork1(char *name, int(*func)(char *), char *arg, int stacksize, int priority) {
     kernelCheck("fork1");	
+
+    disableInterrupts();
     
     // fork makes a process, so we call context init here as well
     USLOSS_ContextInit(&ProcessTable[i].context, ProcessTable[i].stack, 
                        ProcessTable[i].stSize, NULL, trampoline);
+    
+    enableInterrupts();
     return 0;
 }
 
 int join(int *status) {
     kernelCheck("join");
+
+    disableInterrupts();
 
     // is one of the children already dead?
     // do we remove the child from process table? YES, here
@@ -101,11 +107,18 @@ int join(int *status) {
     // or zero it out to clean up this dead child's slot
 
     // join is a way to block parent until a child has called quit
+
+    enableInterrupts();
+
     return 0;
 }
 
 void quit(int status, int switchToPid) {
     kernelCheck("quit");
+
+    // never returns, goes inside other funcs, so 
+    // no need to re enable
+    disableInterrupts();
 
     // i am not runnable, possible rc, if a contextswitch happens
     // disable interrupts to deal with them
