@@ -2,10 +2,11 @@
 #include <phase1.h> 
 #include <stdlib.h>
 
+// ----- Constants
 #define LOWPRIORITY 7
 #define HIGHPRIORITY 1 
 
-// Process Struct
+// ----- Structs
 typedef struct Process {
     char name[MAXNAME];
     int PID;
@@ -16,15 +17,16 @@ typedef struct Process {
     // every process needs a stack allocated to it in mem, so this is where we
     // have it
     void* stack;
-    int stSize; 
+    int stSize; // likely use the USLOSS min stack size when malloc but idk
 
     // a process also has a main function, and that main function takes
     // args (char*)
     int (*processMain)(char* );
 
-
     USLOSS_Context context;
 } Process;
+
+// ----- Function Prototypes
 
 // phase1 funcs
 void phase1_init(void);
@@ -47,15 +49,14 @@ int init(char* usloss);
 int sentinel(char* usloss);
 int testcase_mainProc(char* usloss);
 
+// ----- Global data structures/vars
 Process ProcessTable[MAXPROC];
 Process* CurrProcess;
 USLOSS_Context context;
 
-int (*startFunc) (char*);
-
 void phase1_init(void) {
     kernelCheck("phase1_init");
-    // set currPrices to the init, switch to it
+    // set currProcess to the init, switch to it
     TEMP_switchTo(0);
 }
 
@@ -84,7 +85,7 @@ void quit(int status, int switchToPid) {
 }
 
 /**
- * Prints all process to USLOSS console
+ * Prints all processes to USLOSS console
  */
 void dumpProcesses(void) {
     for (int i = 0; i < MAXPROC; i++) {
@@ -104,11 +105,17 @@ void print_process(Process proc) {
     USLOSS_Console("-----------------------\n");
 }
 
-// phase1a
+// ----- Phase 1a
 
+/**
+ * This function works as a manual, brute dispatcher to switch between processes
+ * since priorities are not implemented yet and the testcode does the switch
+ * for us.
+ */
 void TEMP_switchTo(int newpid) {
     // no old process, esentially should only happen when we start, to 
-    // switch to init
+    // switch to init, might just make it not part of this func and just put
+    // it on phase1_init
     if (newpid == -1) {
         USLOSS_ContextSwitch(NULL, &CurrProcess->context);
     }
@@ -118,7 +125,7 @@ void TEMP_switchTo(int newpid) {
     USLOSS_ContextSwitch(&oldProc->context, &CurrProcess->context);
 }
 
-// Special Processes
+// ----- Special Processes
 
 // init
 
@@ -138,7 +145,7 @@ int testcase_mainProc(char* usloss) {
     return 0;
 }
 
-// helpers 
+// ----- Helpers 
 
 /**
  * Checks whether or not the simulation is running in kernel mode and halts the
