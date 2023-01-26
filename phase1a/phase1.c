@@ -5,8 +5,8 @@
 #define LOWPRIORITY 7
 #define HIGHPRIORITY 1 
 
-// Process Struct Essentially
-typedef struct Process{
+// Process Struct
+typedef struct Process {
     char name[MAXNAME];
     int PID;
     int parentPID;
@@ -21,6 +21,27 @@ typedef struct Process{
 
     USLOSS_Context context;
 } Process;
+
+// phase1 funcs
+void phase1_init(void);
+void startProcesses(void);
+int fork1(char *name, int(*func)(char *), char *arg, int stacksize, int priority);
+int join(int *status);
+void quit(int status, int switchToPid);
+void dumpProcesses(void);
+
+// phase 1a
+void TEMP_switchTo(int newpid);
+
+// helpers
+void kernelCheck(char* proc);
+void trampoline();
+void print_process(Process proc);
+
+// processes
+int init(char* usloss);
+int sentinel(char* usloss);
+int testcase_mainProc(char* usloss);
 
 Process ProcessTable[MAXPROC];
 Process* CurrProcess;
@@ -38,8 +59,7 @@ void startProcesses(void) {
     USLOSS_ContextInit(&ProcessTable[i].context, ProcessTable[i].stack, ProcessTable[i].stSize, NULL, trampoline)
 }
  
-int fork1(char *name, int(*func)(char *), char *arg,
-                  int stacksize, int priority) {
+int fork1(char *name, int(*func)(char *), char *arg, int stacksize, int priority) {
     
     // fork makes a process, so we call context init here as well
     USLOSS_ContextInit(&ProcessTable[i].context, ProcessTable[i].stack, ProcessTable[i].stSize, NULL, trampoline);
@@ -80,7 +100,7 @@ void print_process(Process proc) {
 void TEMP_switchTo(int newpid) {
     // no old process, esentially should only happen when we start, to 
     // switch to init
-    if (pid == -1) {
+    if (newpid == -1) {
         USLOSS_ContextSwitch(NULL, &CurrProcess->context);
     }
     // assuming that pid corresponds to the index in the PTable
