@@ -253,6 +253,8 @@ void trampoline() {
     int res = CurrProcess->processMain(CurrProcess->args);
     // quit on it, 1a will never return? so do we need to do it??? prob not for
     // 1a
+    enableInterrupts();
+    
     quit(res, CurrProcess->parentPID);
 }
 
