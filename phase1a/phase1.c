@@ -18,6 +18,10 @@ typedef struct Process {
     void* stack;
     int stSize; 
 
+    // a process also has a main function, and that main function takes
+    // args (char*)
+    int (*processMain)(char* );
+
 
     USLOSS_Context context;
 } Process;
@@ -50,16 +54,19 @@ USLOSS_Context context;
 int (*startFunc) (char*);
 
 void phase1_init(void) {
+    kernelCheck("phase1_init");
     // set currPrices to the init, switch to it
     TEMP_switchTo(0);
 }
 
 void startProcesses(void) {
+    
     // need to make a context
     USLOSS_ContextInit(&ProcessTable[i].context, ProcessTable[i].stack, ProcessTable[i].stSize, NULL, trampoline);
 }
  
 int fork1(char *name, int(*func)(char *), char *arg, int stacksize, int priority) {
+    kernelCheck("fork1");
     
     // fork makes a process, so we call context init here as well
     USLOSS_ContextInit(&ProcessTable[i].context, ProcessTable[i].stack, ProcessTable[i].stSize, NULL, trampoline);
@@ -67,10 +74,12 @@ int fork1(char *name, int(*func)(char *), char *arg, int stacksize, int priority
 }
 
 int join(int *status) {
+    kernelCheck("join");
     return 0;
 }
 
 void quit(int status, int switchToPid) {
+    kernelCheck("quit");
 
 }
 
@@ -105,7 +114,7 @@ void TEMP_switchTo(int newpid) {
     }
     // assuming that pid corresponds to the index in the PTable
     Process* oldProc = CurrProcess;
-    CurrProcess = ProcessTable[newpid];
+    CurrProcess = &ProcessTable[newpid];
     USLOSS_ContextSwitch(&oldProc->context, &CurrProcess->context);
 }
 
@@ -143,7 +152,13 @@ void kernelCheck(char* proc) {
     }
 }
 
-// wrapper func to call our other funcs, esp for process in contextInit
+/**
+ * This is used so that we can actually correctly call and never return from 
+ * a process' main. 
+ */
 void trampoline() {
-
+    // call the process' main func, with its own args
+    int res = CurrProcess->processMain(CurrProcess->args);
+    // quit on it
+    quit(res);
 }
