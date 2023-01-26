@@ -15,7 +15,7 @@ typedef struct Process{
 } Process;
 
 Process ProcessTable[MAXPROC];
-Process* currProcess;
+Process* CurrProcess;
 
 void phase1_init(void) {
 
@@ -38,8 +38,25 @@ void quit(int status, int switchToPid) {
 
 }
 
+/**
+ * Prints all process to USLOSS console
+ */
 void dumpProcesses(void) {
+    for (int i = 0; i < MAXPROC; i++) {
+        print_process(ProcessTable[i]);
+    }
+}
 
+/**
+ * Helper for dumpProcesses, prints one specific process
+ */
+void print_process(Process proc) {
+    USLOSS_Console("-------Process %s-------\n", proc.name);
+    USLOSS_Console("\t PID:\t%d\n", proc.PID);
+    USLOSS_Console("\t parentPID:\t%d\n", proc.parentPID);
+    USLOSS_Console("\t priority:\t%d\n", proc.priority);
+    USLOSS_Console("\t status ():\t%d\n", proc.status);
+    USLOSS_Console("-----------------------\n");
 }
 
 // phase1a
@@ -80,4 +97,8 @@ void kernelCheck(char* proc) {
         USLOSS_Console("ERROR: halting blah blah blah need to check testcases");
         USLOSS_Halt(1);
     }
+}
+
+void trampoline() {
+
 }
