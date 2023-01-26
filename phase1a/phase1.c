@@ -5,6 +5,8 @@
 // ----- Constants
 #define LOWPRIORITY 7
 #define HIGHPRIORITY 1 
+#define RUNNABLE 0
+// add a few more for like runnable, dead, blocked by join etc
 
 // ----- Structs
 typedef struct Process {
@@ -65,8 +67,8 @@ int pidIncrementer; // do % with MAXPROC to get arrayPos
 
 void phase1_init(void) {
     kernelCheck("phase1_init");
-    // set currProcess to the init, switch to it
-    pidIncrementer = 0;
+    // set currProcess to the init, switch to it, start at init's pid
+    pidIncrementer = 1;
     TEMP_switchTo(pidIncrementer);
 }
 
@@ -148,7 +150,7 @@ void TEMP_switchTo(int newpid) {
     // no old process, esentially should only happen when we start, to 
     // switch to init, might just make it not part of this func and just put
     // it on phase1_init
-    if (newpid == 0) {
+    if (newpid == 1) {
         USLOSS_ContextSwitch(NULL, &CurrProcess->context);
         return;
     }
