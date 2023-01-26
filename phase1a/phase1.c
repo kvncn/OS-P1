@@ -168,5 +168,5 @@ void trampoline() {
     // call the process' main func, with its own args
     int res = CurrProcess->processMain(CurrProcess->args);
     // quit on it
-    quit(res);
+    quit(res, CurrProcess->parentPID);
 }
