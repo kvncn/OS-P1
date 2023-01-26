@@ -3,8 +3,9 @@
 #include <stdlib.h>
 
 // ----- Constants
-#define LOWPRIORITY 7
-#define HIGHPRIORITY 1 
+#define LOW_PRIORITY 7
+#define HIGH_PRIORITY 1
+#define DEADLOCK_CODE 1
 #define RUNNABLE 0
 // add a few more for like runnable, dead, blocked by join etc
 
@@ -165,18 +166,52 @@ void TEMP_switchTo(int newpid) {
 // init
 
 int init(char* usloss) {
+    // calling the service funcs for different phases
+    phase2_start_service_processes();
+	phase3_start_service_processes();
+	phase4_start_service_processes();
+	phase5_start_service_processes();
+    
+    // acling fork for sentinel
+    fork1("sentinel", &sentinel, NULL, USLOSS_MIN_STACK, LOWPRIORITY);
+    
+    // calling fork for testcase_main
+    fork1("testcase_main", &testcase_mainProc, NULL, USLOSS_MIN_STACK, 3);
+    
+    int res; 
+    
+    while (1) {
+        res = join(&res);
+        if (res == -2) 
+            USLOSS_Console("ERROR MESSAGE HERE, need to see testcases for msg");
+            break;
+    }
+    
     return 0;
+    
 }
 
 // sentinel 
 
 int sentinel(char* usloss) {
+    while (1) {
+        if (phase2_check_io() == 0)
+            USLOSS_Console("DEADLOCK!!!!! need to see testcase for specific msg");
+            USLOSS_Halt(DEADLOCK_CODE);
+        USLOSS_WaitInt();
+    }
     return 0;
 }
 
 // testcase_main
 
 int testcase_mainProc(char* usloss) {
+    int res = testcase_main();
+    
+    if (res != 0) {
+        USLOSS_Console("ERROR ON MAIN, need to see testcase for msg");
+    }
+    USLOSS_Halt(res);
     return 0;
 }
 
