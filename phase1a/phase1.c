@@ -116,8 +116,9 @@ void TEMP_switchTo(int newpid) {
     // no old process, esentially should only happen when we start, to 
     // switch to init, might just make it not part of this func and just put
     // it on phase1_init
-    if (newpid == -1) {
+    if (newpid == 0) {
         USLOSS_ContextSwitch(NULL, &CurrProcess->context);
+        return;
     }
     // assuming that pid corresponds to the index in the PTable
     Process* oldProc = CurrProcess;
