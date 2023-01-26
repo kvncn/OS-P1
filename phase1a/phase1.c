@@ -12,10 +12,14 @@ typedef struct Process{
     int parentPID;
     int priority;
     int status; 
+    USLOSS_Context context;
 } Process;
 
 Process ProcessTable[MAXPROC];
 Process* CurrProcess;
+USLOSS_Context context;
+
+int (*startFunc) (char*);
 
 void phase1_init(void) {
 
@@ -23,10 +27,15 @@ void phase1_init(void) {
 
 void startProcesses(void) {
 
+    // need to make a context
+    USLOSS_ContextInit()
 }
  
 int fork1(char *name, int(*func)(char *), char *arg,
                   int stacksize, int priority) {
+    
+    // fork makes a process, so we call context init here as well
+    USLOSS_ContextInit();
     return 0;
 }
 
@@ -61,7 +70,11 @@ void print_process(Process proc) {
 
 // phase1a
 
-void TEMP_switchTo(int pid) {
+void TEMP_switchTo(int newpid) {
+    // assuming that pid corresponds to the index in the PTable
+    Process* oldProc = CurrProcess;
+    CurrProcess = ProcessTable[newpid];
+    USLOSS_ContextSwitch(&oldProc->context, &CurrProcess->context);
 
 }
 
