@@ -53,11 +53,13 @@ int testcase_mainProc(char* usloss);
 Process ProcessTable[MAXPROC];
 Process* CurrProcess;
 USLOSS_Context context;
+int pidIncrementer; // do % with MAXPROC to get arrayPos
 
 void phase1_init(void) {
     kernelCheck("phase1_init");
     // set currProcess to the init, switch to it
-    TEMP_switchTo(0);
+    pidIncrementer = 0;
+    TEMP_switchTo(pidIncrementer);
 }
 
 void startProcesses(void) {
