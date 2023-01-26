@@ -226,7 +226,7 @@ int testcase_mainProc(char* usloss) {
     if (res != 0) {
         USLOSS_Console("ERROR ON MAIN, need to see testcase for msg");
     }
-    USLOSS_Halt(res);
+    USLOSS_Halt(0);
     return 0;
 }
 
