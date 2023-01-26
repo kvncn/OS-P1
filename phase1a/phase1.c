@@ -12,6 +12,9 @@ typedef struct Process {
     int PID;
     int parentPID;
     int priority;
+
+    // 0-9, block me has 10 
+    // runnable, blocked for join, blocked in zap, 
     int status; 
 
     // every process needs a stack allocated to it in mem, so this is where we
@@ -22,6 +25,11 @@ typedef struct Process {
     // a process also has a main function, and that main function takes
     // args (char*)
     int (*processMain)(char* );
+    char* args;
+
+    // before process actually dies (zombie process), save its exit status for 
+    // quit, cleaned up by parent on quit
+    int exitStatus;
 
     USLOSS_Context context;
 } Process;
@@ -65,24 +73,46 @@ void phase1_init(void) {
 void startProcesses(void) {
     
     // need to make a context
-    USLOSS_ContextInit(&ProcessTable[i].context, ProcessTable[i].stack, ProcessTable[i].stSize, NULL, trampoline);
+    USLOSS_ContextInit(&ProcessTable[i].context, ProcessTable[i].stack, 
+                       ProcessTable[i].stSize, NULL, trampoline);
 }
  
 int fork1(char *name, int(*func)(char *), char *arg, int stacksize, int priority) {
     kernelCheck("fork1");
     
     // fork makes a process, so we call context init here as well
-    USLOSS_ContextInit(&ProcessTable[i].context, ProcessTable[i].stack, ProcessTable[i].stSize, NULL, trampoline);
+    USLOSS_ContextInit(&ProcessTable[i].context, ProcessTable[i].stack, 
+                       ProcessTable[i].stSize, NULL, trampoline);
     return 0;
 }
 
 int join(int *status) {
     kernelCheck("join");
+
+    // is one of the children already dead?
+    // do we remove the child from process table? YES, here
+
+    // either have a filed to say it was dead/free
+    // or zero it out to clean up this dead child's slot
+
+    // join is a way to block parent until a child has called quit
     return 0;
 }
 
 void quit(int status, int switchToPid) {
     kernelCheck("quit");
+
+    // i am not runnable, possible rc, if a contextswitch happens
+    // disable interrupts to deal with them
+
+    // if parent dies before all children, halt sim
+
+    // save exit status 
+
+    // maybe wake up parent (currently in blocked state, into runnable)
+    //     -> check if it is waiting/blocked etc..., only wake it up if
+    //        it was blocked by join
+    //        how to wake up parent? change proc->status
 
 }
 
@@ -169,6 +199,7 @@ void kernelCheck(char* proc) {
 void trampoline() {
     // call the process' main func, with its own args
     int res = CurrProcess->processMain(CurrProcess->args);
-    // quit on it
+    // quit on it, 1a will never return? so do we need to do it??? prob not for
+    // 1a
     quit(res, CurrProcess->parentPID);
 }
