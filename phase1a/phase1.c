@@ -9,6 +9,8 @@
 #define DEADLOCK_CODE 1
 #define RUNNABLE 0
 #define RUNNING 1
+#define DEAD 2
+#define BLOCKED_JOIN 3 
 #define FREE 9 // means the slot is free
 // add a few more for like runnable, dead, blocked by join etc
 
@@ -47,6 +49,8 @@ struct Process {
 
     Process* firstChild;
     int numChildren;
+    
+    Process* firstSibling;
 
     USLOSS_Context context;
 };
@@ -100,23 +104,21 @@ void phase1_init(void) {
     pidIncrementer = 1;
 
     int slot = slotFinder(pidIncrementer);
-
-    Process* initEntry;
     
-    strcpy(initEntry->name, "init");
-    initEntry->PID = pidIncrementer;
-    initEntry->args[0] = "\0";
-    initEntry->processMain = &init;
-    initEntry->stSize = USLOSS_MIN_STACK;
-    initEntry->stack = malloc(USLOSS_MIN_STACK);
-    initEntry->priority = 6;
-    initEntry->status = RUNNABLE;
+    strcpy(ProcessTable[slot].name, "init");
+    ProcessTable[slot].PID = pidIncrementer;
+    ProcessTable[slot].args[0] = "\0";
+    ProcessTable[slot].processMain = &init;
+    ProcessTable[slot].stSize = USLOSS_MIN_STACK;
+    ProcessTable[slot].stack = malloc(USLOSS_MIN_STACK);
+    ProcessTable[slot].priority = 6;
+    ProcessTable[slot].status = RUNNABLE;
 
     // create context for init
     USLOSS_ContextInit(&ProcessTable[slot].context, ProcessTable[slot].stack, 
                        ProcessTable[slot].stSize, NULL, trampoline);
 
-    CurrProcess = initEntry;
+    CurrProcess = &ProcessTable[slot];
 
     pidIncrementer++;
 
@@ -165,6 +167,7 @@ int join(int *status) {
     return 0;
 }
 
+// might be needing a lot of work ngl
 void quit(int status, int switchToPid) {
     kernelCheck("quit");
 
@@ -176,6 +179,32 @@ void quit(int status, int switchToPid) {
     // disable interrupts to deal with them
 
     // if parent dies before all children, halt sim
+    if (CurrProcess->numChildren > 0) {
+        USLOSS_Console("ERROR: still had children\n");
+        USLOSS_Halt(3);
+    }
+
+    CurrProcess->parent->numChildren--;
+
+    // if this is the first child, make the next child the first sibling
+    if (CurrProcess->parent->firstChild->PID == CurrProcess->PID) {
+        CurrProcess->parent->firstChild = CurrProcess->firstSibling;
+    }
+
+    CurrProcess->status = DEAD;
+
+    if (CurrProcess->parent == NULL) {
+        cleanEntry(ProcessTable[slotFinder(CurrProcess->PID)]);
+        // don't need to save status if no parent to wake up, jut get out
+    } else {
+        if (CurrProcess->parent->status == BLOCKED_JOIN) {
+            CurrProcess->parent->status = RUNNABLE;
+        }
+    }
+    // do we need this??
+    // if (CurrProcess->parent->status == BLOCKED_JOIN) {
+    //     >> wake up
+    // }
 
     // save exit status 
 
@@ -183,6 +212,8 @@ void quit(int status, int switchToPid) {
     //     -> check if it is waiting/blocked etc..., only wake it up if
     //        it was blocked by join
     //        how to wake up parent? change proc->status
+
+    TEMP_switchTo(switchToPid);
 
 }
 
@@ -320,13 +351,13 @@ void cleanEntry(Process proc) {
     proc.args = "\0";
     proc.PID = 0;
     proc.args = "\0";
-    proc.processMain = NULL;
     proc.stack = NULL;
     proc.priority = 0;
     proc.status = FREE;
     proc.parent = NULL;
     proc.firstChild = NULL;
     proc.numChildren = 0;
+    proc.firstSibling = NULL;
 }
 
 int slotFinder(int x) {
