@@ -7,13 +7,15 @@
 #define HIGH_PRIORITY 1
 #define DEADLOCK_CODE 1
 #define RUNNABLE 0
+#define FREE 9 // means the slot is free
 // add a few more for like runnable, dead, blocked by join etc
+
+#define slot_finder(pid) (pid % MAXPROC)
 
 // ----- Structs
 typedef struct Process {
     char name[MAXNAME];
     int PID;
-    int parentPID;
     int priority;
 
     // 0-9, block me has 10 
@@ -33,6 +35,9 @@ typedef struct Process {
     // before process actually dies (zombie process), save its exit status for 
     // quit, cleaned up by parent on quit
     int exitStatus;
+
+    // parent pointer
+    Process* parent;
 
     USLOSS_Context context;
 } Process;
@@ -56,6 +61,7 @@ void trampoline();
 void print_process(Process proc);
 void disableInterrupts();
 void enableInterrupts();
+void cleanEntry(Process* proc);
 
 // processes
 int init(char* usloss);
@@ -68,11 +74,40 @@ Process* CurrProcess;
 USLOSS_Context context;
 int pidIncrementer; // do % with MAXPROC to get arrayPos
 
+/**
+ * 
+ */
 void phase1_init(void) {
     kernelCheck("phase1_init");
+
+    for (int i = 0; i < MAXPROC; i++) {
+        Process empty; 
+        ProcessTable[i] = empty;
+        cleanEntry(ProcessTable[i]); 
+    }
+
     // set currProcess to the init, switch to it, start at init's pid
     pidIncrementer = 1;
-    TEMP_switchTo(pidIncrementer);
+
+    int slot = slot_finder(x);
+
+    Process* initEntry;
+
+    initEntry->name = "init";
+    initEntry->PID = pidIncrementer;
+    initEntry->args = NULL;
+    initEntry->processMain = &init;
+    initEntry->stSize = USLOSS_MIN_STACK;
+    initEntry->stack = malloc(USLOSS_MIN_STACK);
+    initEntry->priority = 6;
+    initEntry->status = RUNNABLE;
+    initEntry->parent = NULL;
+
+    // create context for init
+    USLOSS_ContextInit(&ProcessTable[slot].context, ProcessTable[slot].stack, 
+                       ProcessTable[slot].stSize, NULL, trampoline);
+    
+    pidIncrementer++;
 }
 
 void startProcesses(void) {
@@ -80,6 +115,8 @@ void startProcesses(void) {
     // need to make a context
     USLOSS_ContextInit(&ProcessTable[i].context, ProcessTable[i].stack, 
                        ProcessTable[i].stSize, NULL, trampoline);
+    
+
 }
  
 int fork1(char *name, int(*func)(char *), char *arg, int stacksize, int priority) {
@@ -149,7 +186,9 @@ void dumpProcesses(void) {
 void print_process(Process proc) {
     USLOSS_Console("-------Process %s-------\n", proc.name);
     USLOSS_Console("\t PID:\t%d\n", proc.PID);
-    USLOSS_Console("\t parentPID:\t%d\n", proc.parentPID);
+    if (proc.parent != NULL) {
+        USLOSS_Console("\t parentPID:\t%d\n", proc.parent->PID);
+    }
     USLOSS_Console("\t priority:\t%d\n", proc.priority);
     USLOSS_Console("\t status ():\t%d\n", proc.status);
     USLOSS_Console("-----------------------\n");
@@ -163,13 +202,6 @@ void print_process(Process proc) {
  * for us.
  */
 void TEMP_switchTo(int newpid) {
-    // no old process, esentially should only happen when we start, to 
-    // switch to init, might just make it not part of this func and just put
-    // it on phase1_init
-    if (newpid == 1) {
-        USLOSS_ContextSwitch(NULL, &CurrProcess->context);
-        return;
-    }
     // assuming that pid corresponds to the index in the PTable
     Process* oldProc = CurrProcess;
     CurrProcess = &ProcessTable[newpid];
@@ -268,4 +300,15 @@ void disableInterrupts() {
 void enableInterrupts() {
 	int currPSR = USLOSS_PSRGet();
 	int res = USLOSS_PsrSet(currPSR | ~USLOSS_PSR_CURRENT_INT);
+}
+
+void cleanEntry(Process* proc) {
+    proc->name = "\0";
+    proc->PID = 0;
+    proc->args = "\0";
+    proc->processMain = NULL;
+    proc->stack = NULL;
+    proc->priority = 0;
+    proc->status = FREE;
+    proc->parent = NULL;
 }
