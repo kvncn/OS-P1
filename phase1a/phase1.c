@@ -156,15 +156,53 @@ int join(int *status) {
 
     // is one of the children already dead?
     // do we remove the child from process table? YES, here
+    if (CurrProcess->numChildren == 0) {
+        USLOSS_Console("NO CHILDREN");
+        USLOSS_Halt(4);
+        return -2;
+    }
 
-    // either have a filed to say it was dead/free
+    // remove dead child
+    Process* child = CurrProcess->firstChild;
+
+    Process* removed = NULL;
+
+    // if dead is head
+    if (child->state == DEAD) {
+        removed = child;
+        CurrProcess->firstChild = child->firstSibling;
+    // remove from rest, first dead child we find
+    } else {
+        for (int i = 0; i < CurProcess->numChildren; i++) {
+            if (child->firstSibling != NULL && child->firstSibling->state == DEAD) {
+                removed = child->firstSibling;
+                break;
+            } 
+            child = child->firstSibling;
+        }
+        child->firstSibling = child->firstSibling->firstSibling;
+    }
+
+    // no one dead
+    if (removed == NULL) {
+        return -2;
+    }
+
+    CurrProcess->numChildren--;
+
+    *status = removed->exitState;
+
+    int res = removed->PID;
+
+    cleanEntry(removed);
+    // either have a failed to say it was dead/free
     // or zero it out to clean up this dead child's slot
 
     // join is a way to block parent until a child has called quit
 
     restoreInterrupts();
 
-    return 0;
+    return -2;
 }
 
 // might be needing a lot of work ngl
