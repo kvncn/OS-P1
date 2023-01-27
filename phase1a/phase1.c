@@ -69,7 +69,7 @@ void kernelCheck(char* proc);
 void trampoline();
 void print_process(Process proc);
 void disableInterrupts();
-void enableInterrupts();
+void restoreInterrupts();
 void cleanEntry(Process proc);
 int slotFinder(int x);
 
@@ -143,7 +143,7 @@ int fork1(char *name, int(*func)(char *), char *arg, int stacksize, int priority
     // USLOSS_ContextInit(&ProcessTable[i].context, ProcessTable[i].stack, 
     //                    ProcessTable[i].stSize, NULL, trampoline);
     
-    enableInterrupts();
+    restoreInterrupts();
     return 0;
 }
 
@@ -160,7 +160,7 @@ int join(int *status) {
 
     // join is a way to block parent until a child has called quit
 
-    enableInterrupts();
+    restoreInterrupts();
 
     return 0;
 }
@@ -311,7 +311,7 @@ void disableInterrupts() {
 	int res = USLOSS_PsrSet(currPSR & ~USLOSS_PSR_CURRENT_INT);
 }
 
-void enableInterrupts() {
+void restoreInterrupts() {
 	unsigned int currPSR = USLOSS_PSRGet();
 	int res = USLOSS_PsrSet(currPSR | ~USLOSS_PSR_CURRENT_INT);
 }
