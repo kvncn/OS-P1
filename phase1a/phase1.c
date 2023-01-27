@@ -7,6 +7,7 @@
 #define HIGH_PRIORITY 1
 #define DEADLOCK_CODE 1
 #define RUNNABLE 0
+#define RUNNING 1
 #define FREE 9 // means the slot is free
 // add a few more for like runnable, dead, blocked by join etc
 
@@ -106,17 +107,23 @@ void phase1_init(void) {
     // create context for init
     USLOSS_ContextInit(&ProcessTable[slot].context, ProcessTable[slot].stack, 
                        ProcessTable[slot].stSize, NULL, trampoline);
-    
+
+    CurrProcess = initEntry;
+
     pidIncrementer++;
+
+    startProcesses();
 }
 
+/**
+ * 
+ */
 void startProcesses(void) {
-    
-    // need to make a context
-    USLOSS_ContextInit(&ProcessTable[i].context, ProcessTable[i].stack, 
-                       ProcessTable[i].stSize, NULL, trampoline);
-    
 
+    // do we disable interrupts and enable them here?
+
+    CurrProcess->status = RUNNING;
+    USLOSS_ContextSwitch(NULL, &CurrProcess->context);
 }
  
 int fork1(char *name, int(*func)(char *), char *arg, int stacksize, int priority) {
