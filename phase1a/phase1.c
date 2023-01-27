@@ -202,7 +202,7 @@ int join(int *status) {
 
     restoreInterrupts();
 
-    return -2;
+    return res;
 }
 
 // might be needing a lot of work ngl
