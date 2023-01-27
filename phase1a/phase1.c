@@ -173,7 +173,7 @@ int join(int *status) {
         CurrProcess->firstChild = child->firstSibling;
     // remove from rest, first dead child we find
     } else {
-        for (int i = 0; i < CurProcess->numChildren; i++) {
+        for (int i = 0; i < CurrProcess->numChildren; i++) {
             if (child->firstSibling != NULL && child->firstSibling->state == DEAD) {
                 removed = child->firstSibling;
                 break;
@@ -194,7 +194,7 @@ int join(int *status) {
 
     int res = removed->PID;
 
-    cleanEntry(removed);
+    cleanEntry(*removed);
     // either have a failed to say it was dead/free
     // or zero it out to clean up this dead child's slot
 
