@@ -28,7 +28,7 @@ struct Process {
 
     // 0-9, block me has 10 
     // runnable, blocked for join, blocked in zap, 
-    int status; 
+    int state; 
 
     // every process needs a stack allocated to it in mem, so this is where we
     // have it
@@ -40,9 +40,9 @@ struct Process {
     int (*processMain)(char* );
     char* args;
 
-    // before process actually dies (zombie process), save its exit status for 
+    // before process actually dies (zombie process), save its exit state for 
     // quit, cleaned up by parent on quit
-    int exitStatus;
+    int exitState;
 
     // parent pointer
     Process* parent;
@@ -112,7 +112,7 @@ void phase1_init(void) {
     ProcessTable[slot].stSize = USLOSS_MIN_STACK;
     ProcessTable[slot].stack = malloc(USLOSS_MIN_STACK);
     ProcessTable[slot].priority = 6;
-    ProcessTable[slot].status = RUNNABLE;
+    ProcessTable[slot].state = RUNNABLE;
 
     // create context for init
     USLOSS_ContextInit(&ProcessTable[slot].context, ProcessTable[slot].stack, 
@@ -132,7 +132,7 @@ void startProcesses(void) {
 
     // do we disable interrupts and enable them here?
 
-    CurrProcess->status = RUNNING;
+    CurrProcess->state = RUNNING;
     USLOSS_ContextSwitch(NULL, &CurrProcess->context);
 }
  
@@ -191,27 +191,28 @@ void quit(int status, int switchToPid) {
         CurrProcess->parent->firstChild = CurrProcess->firstSibling;
     }
 
-    CurrProcess->status = DEAD;
+    CurrProcess->state = DEAD;
+    CurrProcess->exitState = status;
 
     if (CurrProcess->parent == NULL) {
         cleanEntry(ProcessTable[slotFinder(CurrProcess->PID)]);
-        // don't need to save status if no parent to wake up, jut get out
+        // don't need to save state if no parent to wake up, jut get out
     } else {
-        if (CurrProcess->parent->status == BLOCKED_JOIN) {
-            CurrProcess->parent->status = RUNNABLE;
+        if (CurrProcess->parent->state == BLOCKED_JOIN) {
+            CurrProcess->parent->state = RUNNABLE;
         }
     }
     // do we need this??
-    // if (CurrProcess->parent->status == BLOCKED_JOIN) {
+    // if (CurrProcess->parent->state == BLOCKED_JOIN) {
     //     >> wake up
     // }
 
-    // save exit status 
+    // save exit state 
 
     // maybe wake up parent (currently in blocked state, into runnable)
     //     -> check if it is waiting/blocked etc..., only wake it up if
     //        it was blocked by join
-    //        how to wake up parent? change proc->status
+    //        how to wake up parent? change proc->state
 
     TEMP_switchTo(switchToPid);
 
@@ -236,7 +237,7 @@ void print_process(Process proc) {
         USLOSS_Console("\t parentPID:\t%d\n", proc.parent->PID);
     }
     USLOSS_Console("\t priority:\t%d\n", proc.priority);
-    USLOSS_Console("\t status ():\t%d\n", proc.status);
+    USLOSS_Console("\t state ():\t%d\n", proc.state);
     USLOSS_Console("-----------------------\n");
 }
 
@@ -353,11 +354,12 @@ void cleanEntry(Process proc) {
     proc.args = "\0";
     proc.stack = NULL;
     proc.priority = 0;
-    proc.status = FREE;
+    proc.state = FREE;
     proc.parent = NULL;
     proc.firstChild = NULL;
     proc.numChildren = 0;
     proc.firstSibling = NULL;
+    proc.exitState = 0;
 }
 
 int slotFinder(int x) {
