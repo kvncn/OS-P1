@@ -338,16 +338,26 @@ void trampoline() {
     quit(res, CurrProcess->parent->PID);
 }
 
+/**
+ * Disable all USLOSS interrupts
+ */
 void disableInterrupts() {
 	unsigned int currPSR = USLOSS_PsrGet();
 	int res = USLOSS_PsrSet(currPSR & ~USLOSS_PSR_CURRENT_INT);
 }
 
+/**
+ * Restore all USLOSS interrupts
+ */
 void restoreInterrupts() {
 	unsigned int currPSR = USLOSS_PsrGet();
 	int res = USLOSS_PsrSet(currPSR | ~USLOSS_PSR_CURRENT_INT);
 }
 
+/**
+ * Cleans a specific entry in the process table so we can 
+ * initialize it/quit process
+ */
 void cleanEntry(Process proc) {
     proc.args = "\0";
     proc.PID = 0;
@@ -362,6 +372,10 @@ void cleanEntry(Process proc) {
     proc.exitState = 0;
 }
 
+/**
+ * Small helper to find the process index in the process table based
+ * on its pid
+ */
 int slotFinder(int x) {
     return x % MAXPROC;
 }
