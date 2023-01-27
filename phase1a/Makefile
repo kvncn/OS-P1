@@ -10,7 +10,8 @@ LIBS = -lusloss4.7
 LIB_DIR     = ${PREFIX}/lib
 INCLUDE_DIR = ${PREFIX}/include
 
-CFLAGS = -Wall -g -I${INCLUDE_DIR} -I.
+#took off -Wall added -w to disable warnings, disable notes with fcompare
+CFLAGS = -w -g -I${INCLUDE_DIR} -I.
 LDFLAGS = -L${LIB_DIR} ${LIBS}
 
 

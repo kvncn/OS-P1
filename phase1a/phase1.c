@@ -1,6 +1,7 @@
 #include <usloss.h>
 #include <phase1.h> 
 #include <stdlib.h>
+#include <string.h>
 
 // ----- Constants
 #define LOW_PRIORITY 7
@@ -11,10 +12,14 @@
 #define FREE 9 // means the slot is free
 // add a few more for like runnable, dead, blocked by join etc
 
-#define slot_finder(pid) (pid % MAXPROC)
+// #define SLOT_FINDER(pid) (pid % MAXPROC) not working :(
+
+// ---- typedefs
+
+typedef struct Process Process;
 
 // ----- Structs
-typedef struct Process {
+struct Process {
     char name[MAXNAME];
     int PID;
     int priority;
@@ -40,8 +45,11 @@ typedef struct Process {
     // parent pointer
     Process* parent;
 
+    Process* firstChild;
+    int numChildren;
+
     USLOSS_Context context;
-} Process;
+};
 
 // ----- Function Prototypes
 
@@ -62,7 +70,8 @@ void trampoline();
 void print_process(Process proc);
 void disableInterrupts();
 void enableInterrupts();
-void cleanEntry(Process* proc);
+void cleanEntry(Process proc);
+int slotFinder(int x);
 
 // processes
 int init(char* usloss);
@@ -90,19 +99,18 @@ void phase1_init(void) {
     // set currProcess to the init, switch to it, start at init's pid
     pidIncrementer = 1;
 
-    int slot = slot_finder(x);
+    int slot = slotFinder(pidIncrementer);
 
     Process* initEntry;
-
-    initEntry->name = "init";
+    
+    strcpy(initEntry->name, "init");
     initEntry->PID = pidIncrementer;
-    initEntry->args = NULL;
+    initEntry->args[0] = "\0";
     initEntry->processMain = &init;
     initEntry->stSize = USLOSS_MIN_STACK;
     initEntry->stack = malloc(USLOSS_MIN_STACK);
     initEntry->priority = 6;
     initEntry->status = RUNNABLE;
-    initEntry->parent = NULL;
 
     // create context for init
     USLOSS_ContextInit(&ProcessTable[slot].context, ProcessTable[slot].stack, 
@@ -132,8 +140,8 @@ int fork1(char *name, int(*func)(char *), char *arg, int stacksize, int priority
     disableInterrupts();
     
     // fork makes a process, so we call context init here as well
-    USLOSS_ContextInit(&ProcessTable[i].context, ProcessTable[i].stack, 
-                       ProcessTable[i].stSize, NULL, trampoline);
+    // USLOSS_ContextInit(&ProcessTable[i].context, ProcessTable[i].stack, 
+    //                    ProcessTable[i].stSize, NULL, trampoline);
     
     enableInterrupts();
     return 0;
@@ -227,7 +235,7 @@ int init(char* usloss) {
 	phase5_start_service_processes();
     
     // acling fork for sentinel
-    fork1("sentinel", &sentinel, NULL, USLOSS_MIN_STACK, LOWPRIORITY);
+    fork1("sentinel", &sentinel, NULL, USLOSS_MIN_STACK, LOW_PRIORITY);
     
     // calling fork for testcase_main
     fork1("testcase_main", &testcase_mainProc, NULL, USLOSS_MIN_STACK, 3);
@@ -293,29 +301,34 @@ void trampoline() {
     // quit on it, 1a will never return? so do we need to do it??? prob not for
     // 1a
 
-
     USLOSS_Halt(2);
     
-    quit(res, CurrProcess->parentPID);
+    quit(res, CurrProcess->parent->PID);
 }
 
 void disableInterrupts() {
-	int currPSR = USLOSS_PSRGet();
+	unsigned int currPSR = USLOSS_PSRGet();
 	int res = USLOSS_PsrSet(currPSR & ~USLOSS_PSR_CURRENT_INT);
 }
 
 void enableInterrupts() {
-	int currPSR = USLOSS_PSRGet();
+	unsigned int currPSR = USLOSS_PSRGet();
 	int res = USLOSS_PsrSet(currPSR | ~USLOSS_PSR_CURRENT_INT);
 }
 
-void cleanEntry(Process* proc) {
-    proc->name = "\0";
-    proc->PID = 0;
-    proc->args = "\0";
-    proc->processMain = NULL;
-    proc->stack = NULL;
-    proc->priority = 0;
-    proc->status = FREE;
-    proc->parent = NULL;
+void cleanEntry(Process proc) {
+    proc.args = "\0";
+    proc.PID = 0;
+    proc.args = "\0";
+    proc.processMain = NULL;
+    proc.stack = NULL;
+    proc.priority = 0;
+    proc.status = FREE;
+    proc.parent = NULL;
+    proc.firstChild = NULL;
+    proc.numChildren = 0;
+}
+
+int slotFinder(int x) {
+    return x % MAXPROC;
 }
