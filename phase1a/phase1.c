@@ -307,12 +307,12 @@ void trampoline() {
 }
 
 void disableInterrupts() {
-	unsigned int currPSR = USLOSS_PSRGet();
+	unsigned int currPSR = USLOSS_PsrGet();
 	int res = USLOSS_PsrSet(currPSR & ~USLOSS_PSR_CURRENT_INT);
 }
 
 void restoreInterrupts() {
-	unsigned int currPSR = USLOSS_PSRGet();
+	unsigned int currPSR = USLOSS_PsrGet();
 	int res = USLOSS_PsrSet(currPSR | ~USLOSS_PSR_CURRENT_INT);
 }
 
