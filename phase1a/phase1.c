@@ -94,9 +94,8 @@ int procCount;
  */
 void phase1_init(void) {
     kernelCheck("phase1_init");
-
+    Process empty; 
     for (int i = 0; i < MAXPROC; i++) {
-        Process empty; 
         ProcessTable[i] = empty;
         cleanEntry(ProcessTable[i]); 
     }
@@ -108,7 +107,7 @@ void phase1_init(void) {
     
     strcpy(ProcessTable[slot].name, "init");
     ProcessTable[slot].PID = pidIncrementer;
-    ProcessTable[slot].args[0] = "\0";
+    ProcessTable[slot].args[0] = '\0';
     ProcessTable[slot].processMain = &init;
     ProcessTable[slot].stSize = USLOSS_MIN_STACK;
     ProcessTable[slot].stack = malloc(USLOSS_MIN_STACK);
@@ -439,9 +438,8 @@ void restoreInterrupts() {
  * initialize it/quit process
  */
 void cleanEntry(Process proc) {
-    proc.args = "\0";
+    proc.args[0] = ' \0' ;
     proc.PID = 0;
-    proc.args = "\0";
     proc.stack = NULL;
     proc.priority = 0;
     proc.state = FREE;
