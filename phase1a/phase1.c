@@ -87,6 +87,7 @@ Process ProcessTable[MAXPROC];
 Process* CurrProcess;
 USLOSS_Context context;
 int pidIncrementer; // do % with MAXPROC to get arrayPos
+int procCount;
 
 /**
  * 
@@ -113,6 +114,7 @@ void phase1_init(void) {
     ProcessTable[slot].stack = malloc(USLOSS_MIN_STACK);
     ProcessTable[slot].priority = 6;
     ProcessTable[slot].state = RUNNABLE;
+    procCount++;
 
     // create context for init
     USLOSS_ContextInit(&ProcessTable[slot].context, ProcessTable[slot].stack, 
@@ -140,13 +142,51 @@ int fork1(char *name, int(*func)(char *), char *arg, int stacksize, int priority
     kernelCheck("fork1");	
 
     disableInterrupts();
-    
+
+    // problem with args or num processes
+    if (name == NULL || strlen(name) > MAXNAME || func == NULL || 
+        priority < LOW_PRIORITY || priority > HIGH_PRIORITY || 
+        priority == 6 || procCount == MAXPROC) {
+        return -1;
+    } 
+
+    // problem with stack size
+    if (stacksize < USLOSS_MIN_STACK) {
+        return -2;
+    }
+
+
+    procCount++;
+
+    int slot = slotFinder(pidIncrementer);
+
+    strcpy(ProcessTable[slot].name, name);
+
+    if (arg == NULL) {
+        ProcessTable[slot].args[0] = '\0';
+    } else {
+        strcpy(ProcessTable[slot].args, arg);
+    }
+
+    ProcessTable[slot].PID = pidIncrementer;
+    ProcessTable[slot].processMain = func;
+    ProcessTable[slot].stSize = stacksize;
+    ProcessTable[slot].stack = malloc(stacksize);
+    ProcessTable[slot].priority = priority;
+    ProcessTable[slot].state = RUNNABLE;
+    ProcessTable[slot].parent = CurrProcess;
+
+    pidIncrementer++;
+
+    USLOSS_ContextInit(&ProcessTable[slot].context, ProcessTable[slot].stack, 
+                       ProcessTable[slot].stSize, NULL, &trampoline);
+        
     // fork makes a process, so we call context init here as well
     // USLOSS_ContextInit(&ProcessTable[i].context, ProcessTable[i].stack, 
     //                    ProcessTable[i].stSize, NULL, trampoline);
     
     restoreInterrupts();
-    return 0;
+    return ProcessTable[slot].PID;
 }
 
 int join(int *status) {
@@ -240,6 +280,8 @@ void quit(int status, int switchToPid) {
             CurrProcess->parent->state = RUNNABLE;
         }
     }
+
+    procCount--;
     // do we need this??
     // if (CurrProcess->parent->state == BLOCKED_JOIN) {
     //     >> wake up
@@ -304,7 +346,7 @@ int init(char* usloss) {
 	phase4_start_service_processes();
 	phase5_start_service_processes();
     
-    // acling fork for sentinel
+    // calling fork for sentinel
     fork1("sentinel", &sentinel, NULL, USLOSS_MIN_STACK, LOW_PRIORITY);
     
     // calling fork for testcase_main
