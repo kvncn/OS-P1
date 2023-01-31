@@ -26,6 +26,8 @@ struct Process {
     int PID;
     int priority;
 
+    int slot;
+
     // 0-9, block me has 10 
     // runnable, blocked for join, blocked in zap, 
     int state; 
@@ -74,7 +76,7 @@ void trampoline();
 void print_process(Process proc);
 void disableInterrupts();
 void restoreInterrupts();
-void cleanEntry(Process proc);
+void cleanEntry(int idx);
 int slotFinder(int x);
 
 // processes
@@ -93,10 +95,9 @@ int procCount;
  */
 void phase1_init(void) {
     kernelCheck("phase1_init");
-    Process empty; 
+
     for (int i = 0; i < MAXPROC; i++) {
-        ProcessTable[i] = empty;
-        cleanEntry(ProcessTable[i]); 
+        cleanEntry(i); 
     }
 
     // set currProcess to the init, switch to it, start at init's pid
@@ -175,6 +176,7 @@ int fork1(char *name, int(*func)(char *), char *arg, int stacksize, int priority
     ProcessTable[slot].priority = priority;
     ProcessTable[slot].state = RUNNABLE;
     ProcessTable[slot].parent = CurrProcess;
+    ProcessTable[slot].slot = slot;
 
     pidIncrementer++;
 
@@ -234,8 +236,9 @@ int join(int *status) {
     *status = removed->exitState;
 
     int res = removed->PID;
+    int slot = removed->slot;
 
-    cleanEntry(*removed);
+    cleanEntry(slot);
     // either have a failed to say it was dead/free
     // or zero it out to clean up this dead child's slot
 
@@ -276,7 +279,7 @@ void quit(int status, int switchToPid) {
     CurrProcess->exitState = status;
 
     if (CurrProcess->parent == NULL) {
-        cleanEntry(ProcessTable[slotFinder(CurrProcess->PID)]);
+        cleanEntry(CurrProcess->slot);
         // don't need to save state if no parent to wake up, jut get out
     } else {
         if (CurrProcess->parent->state == BLOCKED_JOIN) {
@@ -450,17 +453,18 @@ void restoreInterrupts() {
  * Cleans a specific entry in the process table so we can 
  * initialize it/quit process
  */
-void cleanEntry(Process proc) {
-    proc.args[0] = '\0';
-    proc.PID = 0;
-    proc.stack = NULL;
-    proc.priority = 0;
-    proc.state = FREE;
-    proc.parent = NULL;
-    proc.firstChild = NULL;
-    proc.numChildren = 0;
-    proc.firstSibling = NULL;
-    proc.exitState = 0;
+void cleanEntry(int idx) {
+    ProcessTable[idx].args[0] = '\0';
+    ProcessTable[idx].PID = 0;
+    ProcessTable[idx].stack = NULL;
+    ProcessTable[idx].priority = 0;
+    ProcessTable[idx].state = FREE;
+    ProcessTable[idx].parent = NULL;
+    ProcessTable[idx].firstChild = NULL;
+    ProcessTable[idx].numChildren = 0;
+    ProcessTable[idx].firstSibling = NULL;
+    ProcessTable[idx].exitState = 0;
+    ProcessTable[idx].slot = idx;
 }
 
 /**
