@@ -207,7 +207,6 @@ int join(int *status) {
 
     // do we even have children??
     if (CurrProcess->numChildren == 0) {
-        print_process(*CurrProcess);
         USLOSS_Console("No children, join fails\n");
         // USLOSS_Console("CURR PID %s\n", CurrProcess->name);
         // USLOSS_Console("NO CHILDREN\n");
@@ -302,9 +301,22 @@ void quit(int status, int switchToPid) {
  * Prints all processes to USLOSS console
  */
 void dumpProcesses(void) {
-    for (int i = 0; i < MAXPROC; i++) {
-        if (ProcessTable[i].state != FREE)
-        print_process(ProcessTable[i]);
+    USLOSS_Console(" PID  PPID  NAME              PRIORITY  STATE\n");
+
+    for (int i=0; i < MAXPROC; i++) {
+        Process *slot = &ProcessTable[i];
+        if (slot->PID == 0)
+            continue;
+
+        int ppid = (slot->parent == NULL) ? 0 : slot->parent->PID;
+        USLOSS_Console("%4d  %4d  %-17s %-10d", slot->PID, ppid, slot->name, slot->priority);
+
+        if (slot->state != -1)
+            USLOSS_Console("Terminated(%d)\n", slot->state);
+        else if (slot == CurrProcess)
+            USLOSS_Console("Running\n");
+        else
+            USLOSS_Console("Runnable\n");
     }
 }
 
