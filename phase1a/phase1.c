@@ -210,12 +210,10 @@ int join(int *status) {
 
     disableInterrupts();
 
-    // USLOSS_Console("Inside join\n");
-
-    
-    // is one of the children already dead?
-    // do we remove the child from process table? YES, here
-    if (CurrProcess->numChildren == 0) {
+    // do we even have children??
+    if (CurrProcess->numChildren < 0) {
+        print_process(*CurrProcess);
+        USLOSS_Console("No children, join fails\n");
         // USLOSS_Console("CURR PID %s\n", CurrProcess->name);
         // USLOSS_Console("NO CHILDREN\n");
         // USLOSS_Halt(4);
@@ -299,8 +297,10 @@ void quit(int status, int switchToPid) {
         CurrProcess->parent->numChildren--;
     }
 
+    // since we quit, decrease count
     procCount--;
     
+    // quit doesn't care about saving prev context
     for (int i = 0; i < MAXPROC; i++) {
         if (ProcessTable[i].PID == switchToPid) {
             CurrProcess = &ProcessTable[i];
@@ -355,9 +355,6 @@ void TEMP_switchTo(int newpid) {
             break;
         }
     }
-    //CurrProcess = &ProcessTable[slotFinder(newpid)];
-    // should never revert back to init yk
-    // so we block that from happening
     USLOSS_ContextSwitch(&oldProc->context, &CurrProcess->context);
 }
 
