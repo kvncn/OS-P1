@@ -358,6 +358,8 @@ void TEMP_switchTo(int newpid) {
             break;
         }
     }
+    oldProc->state = RUNNABLE;
+    CurrProcess->state = RUNNING;
     USLOSS_ContextSwitch(&oldProc->context, &CurrProcess->context);
 }
 
