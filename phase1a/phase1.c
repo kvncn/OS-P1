@@ -116,14 +116,6 @@ void phase1_init(void) {
     ProcessTable[slot].state = RUNNABLE;
     procCount++;
 
-    // create context for init
-    USLOSS_ContextInit(&ProcessTable[slot].context, ProcessTable[slot].stack, 
-                       ProcessTable[slot].stSize, NULL, trampoline);
-
-    CurrProcess = &ProcessTable[slot];
-
-    pidIncrementer++;
-
     startProcesses();
 }
 
@@ -133,8 +125,15 @@ void phase1_init(void) {
 void startProcesses(void) {
 
     // do we disable interrupts and enable them here?
+ // create context for init
+ int slot = slotFinder(1);
+    USLOSS_ContextInit(&ProcessTable[slot].context, ProcessTable[slot].stack, 
+                       ProcessTable[slot].stSize, NULL, trampoline);
 
-    CurrProcess->state = RUNNING;
+    CurrProcess = &ProcessTable[slot];
+
+    pidIncrementer++;
+   // CurrProcess->state = RUNNING;
     USLOSS_ContextSwitch(NULL, &CurrProcess->context);
 }
  
