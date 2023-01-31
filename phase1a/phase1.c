@@ -211,7 +211,7 @@ int join(int *status) {
     disableInterrupts();
 
     // do we even have children??
-    if (CurrProcess->numChildren < 0) {
+    if (CurrProcess->numChildren == 0) {
         print_process(*CurrProcess);
         USLOSS_Console("No children, join fails\n");
         // USLOSS_Console("CURR PID %s\n", CurrProcess->name);
@@ -293,8 +293,6 @@ void quit(int status, int switchToPid) {
     // just clean the entry since we have no parents to report to
     if (CurrProcess->parent == NULL) {
         cleanEntry(CurrProcess->slot);
-    } else {
-        CurrProcess->parent->numChildren--;
     }
 
     // since we quit, decrease count
