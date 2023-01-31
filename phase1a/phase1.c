@@ -68,6 +68,7 @@ int fork1(char *name, int(*func)(char *), char *arg, int stacksize, int priority
 int join(int *status);
 void quit(int status, int switchToPid);
 void dumpProcesses(void);
+int getpid(void);
 
 // phase 1a
 void TEMP_switchTo(int newpid);
@@ -242,12 +243,11 @@ int join(int *status) {
 
     // USLOSS_Console("Removed the dead\n");
 
-    // no one dead
-    // if (removed == NULL) {
-    //     return -2;
-    // }
-
-    CurrProcess->joinWait--;
+    //no one dead
+    if (removed == NULL) {
+        USLOSS_Console("NO DEAD CHILDREN\n");
+        USLOSS_Halt(4);
+    }
 
     CurrProcess->numChildren--;
 
@@ -295,28 +295,12 @@ void quit(int status, int switchToPid) {
     // just clean the entry since we have no parents to report to
     if (CurrProcess->parent == NULL) {
         cleanEntry(CurrProcess->slot);
-        procCount--;
     } else {
         CurrProcess->parent->numChildren--;
     }
-        // don't need to save state if no parent to wake up, jut get out
-    // } else {
-    //     CurrProcess->parent->joinWait++;
-    //     if (CurrProcess->parent->state == BLOCKED_JOIN) {
-    //         CurrProcess->parent->state = RUNNABLE;
-    //     }
-    // }
-    // do we need this??
-    // if (CurrProcess->parent->state == BLOCKED_JOIN) {
-    //     >> wake up
-    // }
 
-    // save exit state 
-
-    // maybe wake up parent (currently in blocked state, into runnable)
-    //     -> check if it is waiting/blocked etc..., only wake it up if
-    //        it was blocked by join
-    //        how to wake up parent? change proc->state
+    procCount--;
+    
     
     TEMP_switchTo(switchToPid);
 }
@@ -347,6 +331,10 @@ void print_process(Process proc) {
     USLOSS_Console("-----------------------\n");
 }
 
+int getpid() {
+    return CurrProcess->PID;
+}
+
 // ----- Phase 1a
 
 /**
@@ -363,6 +351,8 @@ void TEMP_switchTo(int newpid) {
             break;
         }
     }
+    USLOSS_Console("NOW AFTER WE SWITCH: \n");
+    print_process(*CurrProcess);
     //CurrProcess = &ProcessTable[slotFinder(newpid)];
     // should never revert back to init yk
     // so we block that from happening
@@ -400,9 +390,10 @@ int init(char* usloss) {
     CurrProcess->numChildren++;
     CurrProcess->firstChild = &ProcessTable[slot];
 
-    pidIncrementer++;
+    USLOSS_ContextInit(&ProcessTable[slot].context, ProcessTable[slot].stack, 
+                       ProcessTable[slot].stSize, NULL, &trampoline);
 
-    //fork1("sentinel", &sentinel, NULL, USLOSS_MIN_STACK, LOW_PRIORITY);
+    pidIncrementer++;
     
     // calling fork for testcase_main
     fork1("testcase_main", &testcase_mainProc, NULL, USLOSS_MIN_STACK, 3);
@@ -426,7 +417,6 @@ int init(char* usloss) {
 }
 
 // sentinel 
-
 int sentinel(char* usloss) {
     while (1) {
         if (phase2_check_io() == 0)
@@ -512,7 +502,6 @@ void cleanEntry(int idx) {
     ProcessTable[idx].exitState = 0;
     ProcessTable[idx].slot = 0;
     ProcessTable[idx].joinWait = 0;
-    
 }
 
 /**
