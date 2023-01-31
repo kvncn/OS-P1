@@ -182,12 +182,16 @@ int fork1(char *name, int(*func)(char *), char *arg, int stacksize, int priority
         CurrProcess->firstChild = &ProcessTable[slot];
         
     } else {
+        // adding to head
         Process* cur = CurrProcess->firstChild;
 
-        while (cur->firstSibling != NULL) {
-            cur = cur->firstSibling;
-        }
-        cur->firstSibling = &ProcessTable[slot];
+        ProcessTable[slot].firstSibling = cur;
+        CurrProcess->firstChild = &ProcessTable[slot];
+
+        // while (cur->firstSibling != NULL) {
+        //     cur = cur->firstSibling;
+        // }
+        // cur->firstSibling = &ProcessTable[slot];
     }
     CurrProcess->numChildren++;
 
