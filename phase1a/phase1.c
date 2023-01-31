@@ -1,66 +1,69 @@
+/**
+ * AUTHORS:    Kevin Nisterenko and Rey Sanayei
+ * COURSE:     CSC 452, Spring 2023
+ * INSTRUCTOR: Russell Lewis
+ * ASSIGNMENT: Phase1a
+ * DUE_DATE:   02/02/2023
+ * 
+ * This project implements context management in a simulation of an operating
+ * system kernel. It handles the Process Table, process creation, quitting, 
+ * joining and some basic bootstrap for simulation of the kernel. 
+ */
+
+// ----- Includes
 #include <usloss.h>
 #include <phase1.h> 
 #include <stdlib.h>
 #include <string.h>
 
 // ----- Constants
-#define LOW_PRIORITY 7
+#define LOW_PRIORITY 7   
 #define HIGH_PRIORITY 1
-#define DEADLOCK_CODE 1
-#define RUNNABLE 0
-#define RUNNING 1
-#define DEAD 2
-#define BLOCKED_JOIN 3 
-#define FREE 9 // means the slot is free
-// add a few more for like runnable, dead, blocked by join etc
 
-// #define SLOT_FINDER(pid) (pid % MAXPROC) not working :(
+// Error codes
+#define DEADLOCK_CODE 1 // means we hit a deadlock for the halt
+
+// Processes states
+#define RUNNABLE 0      // means the process is in a runnable state
+#define RUNNING 1       // means the process is currently running
+#define DEAD 2          // means the process quit
+#define BLOCKED_JOIN 3  // means the process was blocked in a join
+#define FREE 9          // means the slot is free
 
 // ---- typedefs
-
 typedef struct Process Process;
 
 // ----- Structs
+
+/**
+ * Struct for a process, contains all the information on the process, including
+ * it's main function pointer. Also contains all the necessary info (priority,
+ * id, state, etc).
+ */
 struct Process {
-    char name[MAXNAME];
-    int PID;
-    int priority;
-
-    int slot;
-
-    // 0-9, block me has 10 
-    // runnable, blocked for join, blocked in zap, 
-    int state; 
-
-    int joinWait;
-
-    // every process needs a stack allocated to it in mem, so this is where we
-    // have it
-    void* stack;
-    int stSize; // likely use the USLOSS min stack size when malloc but idk
-
-    // a process also has a main function, and that main function takes
-    // args (char*)
-    int (*processMain)(char* );
+    char name[MAXNAME];         // name of the process
+    int PID;                    // process id
+    int priority;               // process priority
+    int slot;                   // slot in the process table
+    int state;                  // process state, runnable, running etc
+    int joinWait;               // join waiting
+    void* stack;                // every process needs a stack allocated to it
+    int stSize;                 // stackSize
+    int (*processMain)(char* ); // a process also has a main function
     char args[MAXARG];
+    int exitState;              // before process actually dies (zombie process),
+                                // save its exit state for quit, cleaned up by
+                                // parent on quit
 
-    // before process actually dies (zombie process), save its exit state for 
-    // quit, cleaned up by parent on quit
-    int exitState;
+    Process* parent;            // parent pointer 
+    Process* firstChild;        // first child of the process, links to other
+    Process* firstSibling;      // first sibling, linked list
+    int numChildren;            // number of children that spanned from this
 
-    // parent pointer
-    Process* parent;
-
-    Process* firstChild;
-    int numChildren;
-    
-    Process* firstSibling;
-
-    USLOSS_Context context;
+    USLOSS_Context context;     // USLOSS context for the init and switches
 };
 
 // ----- Function Prototypes
-
 // phase1 funcs
 void phase1_init(void);
 void startProcesses(void);
@@ -79,7 +82,7 @@ void trampoline();
 void disableInterrupts();
 void restoreInterrupts();
 void cleanEntry(int idx);
-int slotFinder(int x);
+int slotFinder();
 
 // processes
 int init(char* usloss);
@@ -87,13 +90,14 @@ int sentinel(char* usloss);
 int testcase_mainProc(char* usloss);
 
 // ----- Global data structures/vars
-Process ProcessTable[MAXPROC];
-Process* CurrProcess;
-int pidIncrementer; // do % with MAXPROC to get arrayPos
-int procCount;
+Process ProcessTable[MAXPROC]; // actual Process Table
+Process* CurrProcess;          // current process/running process
+int pidIncrementer;            // takes care of the pid
+int procCount;                 // how many process currently in the table
 
 /**
- * 
+ * Bootstarp for the process table and the init process, only populates 
+ * the process table with 
  */
 void phase1_init(void) {
     kernelCheck("phase1_init");
@@ -104,7 +108,7 @@ void phase1_init(void) {
     // set currProcess to the init, switch to it, start at init's pid
     pidIncrementer = 1;
 
-    int slot = slotFinder(pidIncrementer);
+    int slot = slotFinder();
     
     strcpy(ProcessTable[slot].name, "init");
     ProcessTable[slot].PID = pidIncrementer;
@@ -157,7 +161,7 @@ int fork1(char *name, int(*func)(char *), char *arg, int stacksize, int priority
 
     procCount++;
 
-    int slot = slotFinder(pidIncrementer);
+    int slot = slotFinder();
     if (slot == -1) {
         return -1;
     }
@@ -305,7 +309,8 @@ void quit(int status, int switchToPid) {
 }
 
 /**
- * Prints all processes to USLOSS console
+ * Prints all processes to USLOSS console, based on RUSS's implementation on 
+ * discord. 
  */
 void dumpProcesses(void) {
     USLOSS_Console(" PID  PPID  NAME              PRIORITY  STATE\n");
@@ -370,7 +375,7 @@ int init(char* usloss) {
 
     CurrProcess->state = RUNNABLE;
 
-    int slot = slotFinder(pidIncrementer);
+    int slot = slotFinder();
 
     strcpy(ProcessTable[slot].name, "sentinel");
     
@@ -508,9 +513,11 @@ void cleanEntry(int idx) {
 
 /**
  * Small helper to find the process index in the process table based
- * on its pid
+ * on its pidIncrementer, ie, always finds the next slot in the table. 
+ * 
+ * @return integer representing the next slot in the process table
  */
-int slotFinder(int x) {
+int slotFinder() {
     // cant really do it if we are full of processes
 	if (procCount >= MAXPROC) 
 		return -1;
@@ -519,6 +526,7 @@ int slotFinder(int x) {
 	int procNum = 0;
     // here we have the actual index based on pid incrementer % MAXPROC
 	while (ProcessTable[pidIncrementer % MAXPROC].state != FREE) {
+        // if we end up going over the allowed number of process we return -1
 		if (procNum < MAXPROC) {
             procNum++;
 		    pidIncrementer++;
