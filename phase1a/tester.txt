@@ -11,5 +11,5 @@ XXp1(): arg = 'XXp1'
 testcase_main(): after fork of child 4
 testcase_main(): performing join
 testcase_main(): exit status for child 4 is 3
-Phase 1B TEMPORARY HACK: testcase_main() returned, simulation
+Phase 1B TEMPORARY HACK: testcase_main() returned, simulation will now halt.
 TESTCASE ENDED: Call counts:   check_io() 0   clockHandler() 0
