@@ -134,7 +134,7 @@ void startProcesses(void) {
 
     // do we disable interrupts and enable them here?
 
-    CurrProcess->state = RUNNING;
+    //CurrProcess->state = RUNNING;
     USLOSS_ContextSwitch(NULL, &CurrProcess->context);
 }
  
@@ -401,8 +401,8 @@ int init(char* usloss) {
     
     // calling fork for testcase_main
     fork1("testcase_main", &testcase_mainProc, NULL, USLOSS_MIN_STACK, 3);
-
-    dumpProcesses();
+    
+    USLOSS_ContextSwitch(&CurrProcess->context, &ProcessTable[3].context);
     
     int res; 
     
