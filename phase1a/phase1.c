@@ -297,6 +297,7 @@ void quit(int status, int switchToPid) {
             break;
         }
     }
+    CurrProcess->state = RUNNING;
     USLOSS_ContextSwitch(NULL, &CurrProcess->context);
 }
 
@@ -457,6 +458,7 @@ void kernelCheck(char* proc) {
  */
 void trampoline() {
     restoreInterrupts();
+    CurrProcess->state = RUNNING;
     // call the process' main func, with its own args
     int res = CurrProcess->processMain(CurrProcess->args);
     // quit on it, 1a will never return? so do we need to do it??? prob not for
