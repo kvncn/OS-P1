@@ -116,6 +116,14 @@ void phase1_init(void) {
     ProcessTable[slot].state = RUNNABLE;
     procCount++;
 
+    // create context for init
+    USLOSS_ContextInit(&ProcessTable[slot].context, ProcessTable[slot].stack, 
+                       ProcessTable[slot].stSize, NULL, trampoline);
+
+    CurrProcess = &ProcessTable[slot];
+
+    pidIncrementer++;
+
     startProcesses();
 }
 
@@ -125,15 +133,8 @@ void phase1_init(void) {
 void startProcesses(void) {
 
     // do we disable interrupts and enable them here?
- // create context for init
- int slot = slotFinder(1);
-    USLOSS_ContextInit(&ProcessTable[slot].context, ProcessTable[slot].stack, 
-                       ProcessTable[slot].stSize, NULL, trampoline);
 
-    CurrProcess = &ProcessTable[slot];
-
-    pidIncrementer++;
-   // CurrProcess->state = RUNNING;
+    CurrProcess->state = RUNNING;
     USLOSS_ContextSwitch(NULL, &CurrProcess->context);
 }
  
@@ -144,8 +145,8 @@ int fork1(char *name, int(*func)(char *), char *arg, int stacksize, int priority
 
     // problem with args or num processes
     if (name == NULL || strlen(name) > MAXNAME || func == NULL || 
-        priority < LOW_PRIORITY || priority > HIGH_PRIORITY || 
-        priority == 6 || procCount == MAXPROC) {
+        priority >= LOW_PRIORITY-1 || priority < HIGH_PRIORITY || 
+        procCount == MAXPROC) {
         return -1;
     } 
 
