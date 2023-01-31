@@ -177,9 +177,10 @@ int fork1(char *name, int(*func)(char *), char *arg, int stacksize, int priority
     ProcessTable[slot].slot = slot;
 
     pidIncrementer++;
-    CurrProcess->numChildren++;
+
     if (CurrProcess->firstChild == NULL) {
         CurrProcess->firstChild = &ProcessTable[slot];
+        
     } else {
         Process* cur = CurrProcess->firstChild;
 
@@ -188,6 +189,7 @@ int fork1(char *name, int(*func)(char *), char *arg, int stacksize, int priority
         }
         cur->firstSibling = &ProcessTable[slot];
     }
+    CurrProcess->numChildren++;
 
     USLOSS_ContextInit(&ProcessTable[slot].context, ProcessTable[slot].stack, 
                        ProcessTable[slot].stSize, NULL, &trampoline);
@@ -195,7 +197,7 @@ int fork1(char *name, int(*func)(char *), char *arg, int stacksize, int priority
     // fork makes a process, so we call context init here as well
     // USLOSS_ContextInit(&ProcessTable[i].context, ProcessTable[i].stack, 
     //                    ProcessTable[i].stSize, NULL, trampoline);
-    
+
     restoreInterrupts();
     return ProcessTable[slot].PID;
 }
@@ -204,6 +206,8 @@ int join(int *status) {
     kernelCheck("join");
 
     disableInterrupts();
+
+    USLOSS_Console("Inside join\n");
 
     
     // is one of the children already dead?
@@ -215,10 +219,13 @@ int join(int *status) {
         return -2;
     }
 
+    USLOSS_Console("Checked for children join\n");
     // remove dead child
     Process* child = CurrProcess->firstChild;
 
     Process* removed = NULL;
+
+    dumpProcesses();
 
     // if dead is head
     if (child->state == DEAD) {
@@ -232,6 +239,8 @@ int join(int *status) {
         removed = child->firstSibling;
         child->firstSibling = child->firstSibling->firstSibling;
     }
+
+    USLOSS_Console("Removed the dead\n");
 
     // no one dead
     // if (removed == NULL) {
@@ -287,6 +296,7 @@ void quit(int status, int switchToPid) {
 
     if (CurrProcess->parent == NULL) {
         cleanEntry(CurrProcess->slot);
+        procCount--;
         // don't need to save state if no parent to wake up, jut get out
     } else {
         CurrProcess->parent->joinWait++;
@@ -294,8 +304,6 @@ void quit(int status, int switchToPid) {
             CurrProcess->parent->state = RUNNABLE;
         }
     }
-
-    procCount--;
     // do we need this??
     // if (CurrProcess->parent->state == BLOCKED_JOIN) {
     //     >> wake up
@@ -317,6 +325,7 @@ void quit(int status, int switchToPid) {
  */
 void dumpProcesses(void) {
     for (int i = 0; i < MAXPROC; i++) {
+        if (ProcessTable[i].state != FREE)
         print_process(ProcessTable[i]);
     }
 }
@@ -332,6 +341,7 @@ void print_process(Process proc) {
     }
     USLOSS_Console("\t priority:\t%d\n", proc.priority);
     USLOSS_Console("\t state ():\t%d\n", proc.state);
+    USLOSS_Console("\t numChild ():\t%d\n", proc.numChildren);
     USLOSS_Console("-----------------------\n");
 }
 
@@ -365,11 +375,31 @@ int init(char* usloss) {
 	phase4_start_service_processes();
 	phase5_start_service_processes();
     
-    // calling fork for sentinel
-    fork1("sentinel", &sentinel, NULL, USLOSS_MIN_STACK, LOW_PRIORITY);
+    // creating sentinel
+    procCount++;
+
+    int slot = slotFinder(pidIncrementer);
+
+    strcpy(ProcessTable[slot].name, "sentinel");
+    
+    ProcessTable[slot].args[0] = '\0';
+    ProcessTable[slot].PID = pidIncrementer;
+    ProcessTable[slot].processMain = &sentinel;
+    ProcessTable[slot].stSize = USLOSS_MIN_STACK;
+    ProcessTable[slot].stack = malloc(USLOSS_MIN_STACK);
+    ProcessTable[slot].priority = LOW_PRIORITY;
+    ProcessTable[slot].state = RUNNABLE;
+    ProcessTable[slot].parent = CurrProcess;
+    ProcessTable[slot].slot = slot;
+
+    pidIncrementer++;
+
+    //fork1("sentinel", &sentinel, NULL, USLOSS_MIN_STACK, LOW_PRIORITY);
     
     // calling fork for testcase_main
     fork1("testcase_main", &testcase_mainProc, NULL, USLOSS_MIN_STACK, 3);
+
+    dumpProcesses();
     
     int res; 
     
