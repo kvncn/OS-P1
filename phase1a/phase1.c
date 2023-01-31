@@ -392,6 +392,9 @@ int init(char* usloss) {
     ProcessTable[slot].parent = CurrProcess;
     ProcessTable[slot].slot = slot;
 
+    CurrProcess->numChildren++;
+    CurrProcess->firstChild = &ProcessTable[slot];
+
     pidIncrementer++;
 
     //fork1("sentinel", &sentinel, NULL, USLOSS_MIN_STACK, LOW_PRIORITY);
