@@ -452,7 +452,7 @@ int testcase_mainProc(char* usloss) {
  * entire simulation if so. 
  */
 void kernelCheck(char* proc) {
-    USLOSS_Console("CURRENT STUFF %d\n", USLOSS_PsrGet());
+    //USLOSS_Console("CURRENT STUFF %d\n", USLOSS_PsrGet());
     // means we are running in user mode, so we halt simulation
     if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) == 0) {
 		USLOSS_Console("ERROR: Someone attempted to call %s while in user mode!\n", proc);
