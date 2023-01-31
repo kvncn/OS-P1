@@ -311,12 +311,12 @@ void dumpProcesses(void) {
         int ppid = (slot->parent == NULL) ? 0 : slot->parent->PID;
         USLOSS_Console("%4d  %4d  %-17s %-10d", slot->PID, ppid, slot->name, slot->priority);
 
-        if (slot->state != -1)
-            USLOSS_Console("Terminated(%d)\n", slot->state);
-        else if (slot == CurrProcess)
+        if (slot->state == RUNNING)
             USLOSS_Console("Running\n");
-        else
+        else if (slot->state == RUNNABLE)
             USLOSS_Console("Runnable\n");
+        else
+            USLOSS_Console("Terminated(%d)\n", slot->state);
     }
 }
 
