@@ -9,7 +9,6 @@ Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
 XXp1(): started
 XXp1(): arg = 'XXp1'
 XXp1(): performing join with no children
-No children, join fails
 XXp1(): value returned by join is -2 expected value was -2
 testcase_main(): after fork of child 4
 Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
@@ -21,7 +20,6 @@ testcase_main(): exit status for child 5 is 2
 testcase_main(): performing second join
 testcase_main(): exit status for child 4 is 1
 testcase_main(): performing third join, have no unjoined children
-No children, join fails
 testcase_main(): value returned by join is -2 expected value was -2
 Phase 1B TEMPORARY HACK: testcase_main() returned, simulation will now halt.
 TESTCASE ENDED: Call counts:   check_io() 0   clockHandler() 0

@@ -2,11 +2,11 @@ phase2_start_service_processes() called -- currently a NOP
 phase3_start_service_processes() called -- currently a NOP
 phase4_start_service_processes() called -- currently a NOP
 phase5_start_service_processes() called -- currently a NOP
+Phase 1B TEMPORARY HACK: init() manually switching to testcase_main() after using fork1() to create it.
 testcase_main(): started
 EXPECTATION: The simulation should be terminated as soon as quit() is called, since we are not in kernel mode.
 Phase 1B TEMPORARY HACK: Manually switching to XXp1()
 XXp1(): started
 XXp1(): arg = 'XXp1'
-testcase_main: USLOSS_PsrSet returned 1
-Halting...
+ERROR: Someone attempted to call quit while in user mode!
 TESTCASE ENDED: Call counts:   check_io() 0   clockHandler() 0

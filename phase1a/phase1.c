@@ -134,7 +134,7 @@ void startProcesses(void) {
 
     // do we disable interrupts and enable them here?
 
-    //CurrProcess->state = RUNNING;
+    CurrProcess->state = RUNNING;
     USLOSS_ContextSwitch(NULL, &CurrProcess->context);
 }
  
@@ -210,7 +210,7 @@ int join(int *status) {
 
     // do we even have children??
     if (CurrProcess->numChildren == 0) {
-        USLOSS_Console("No children, join fails\n");
+        //USLOSS_Console("No children, join fails\n");
         // USLOSS_Console("CURR PID %s\n", CurrProcess->name);
         // USLOSS_Console("NO CHILDREN\n");
         // USLOSS_Halt(4);
@@ -239,7 +239,7 @@ int join(int *status) {
 
     //no one dead
     if (removed == NULL) {
-        USLOSS_Console("NO DEAD CHILDREN\n");
+        //USLOSS_Console("NO DEAD CHILDREN\n");
         USLOSS_Halt(4);
     }
 
@@ -364,6 +364,8 @@ int init(char* usloss) {
     // creating sentinel
     procCount++;
 
+    CurrProcess->state = RUNNABLE;
+
     int slot = slotFinder(pidIncrementer);
 
     strcpy(ProcessTable[slot].name, "sentinel");
@@ -383,7 +385,7 @@ int init(char* usloss) {
 
     USLOSS_ContextInit(&ProcessTable[slot].context, ProcessTable[slot].stack, 
                        ProcessTable[slot].stSize, NULL, &trampoline);
-
+    
     pidIncrementer++;
     
     USLOSS_Console("Phase 1B TEMPORARY HACK: init() manually switching to testcase_main() after using fork1() to create it.\n");

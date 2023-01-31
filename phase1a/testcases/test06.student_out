@@ -2,6 +2,7 @@ phase2_start_service_processes() called -- currently a NOP
 phase3_start_service_processes() called -- currently a NOP
 phase4_start_service_processes() called -- currently a NOP
 phase5_start_service_processes() called -- currently a NOP
+Phase 1B TEMPORARY HACK: init() manually switching to testcase_main() after using fork1() to create it.
 testcase_main(): started
 EXPECTATION: Create XXp1 (moderate priority); that creates 2 XXp2 children (low priority).  XXp1 will block on join(), which will cause main() to wake up and report the fork() results - after which the XXp2 processes will run.
 Phase 1B TEMPORARY HACK: Manually switching to XXp1()
@@ -27,4 +28,5 @@ XXp2(): arg = 'XXp2'
 XXp2(): This process will terminate immediately.
 XXp1(): second join returned kidpid = 6, status = 5
 testcase_main(): exit status for child 4 is 3
+Phase 1B TEMPORARY HACK: testcase_main() returned, simulation will now halt.
 TESTCASE ENDED: Call counts:   check_io() 0   clockHandler() 0

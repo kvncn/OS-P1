@@ -2,6 +2,7 @@ phase2_start_service_processes() called -- currently a NOP
 phase3_start_service_processes() called -- currently a NOP
 phase4_start_service_processes() called -- currently a NOP
 phase5_start_service_processes() called -- currently a NOP
+Phase 1B TEMPORARY HACK: init() manually switching to testcase_main() after using fork1() to create it.
 testcase_main(): started
 EXPECTATION: Attempt to create MAXPROC+2 processes (without calling join() on any of them).  This will work many times but eventually fail because all of the procTable slots are full.  We will only print out info about the failed ones.
 testcase_main(): start 52 processes
@@ -53,5 +54,5 @@ Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
 Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
 Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
 Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
-ERROR: still had children
+ERROR: Process pid 51 called quit() while it still had children.
 TESTCASE ENDED: Call counts:   check_io() 0   clockHandler() 0
