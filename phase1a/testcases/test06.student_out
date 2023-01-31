@@ -13,44 +13,18 @@ XXp1(): executing fork of second child
 XXp1(): fork1 of second child returned pid = 6
 XXp1(): performing first join
 Phase 1B TEMPORARY HACK: Manually switching to testcase_main(), since XXp1 has created its two children, which are lower priority than 
--------Process init-------
-	 PID:	1
-	 priority:	6
-	 state ():	0
-	 numChild ():	2
------------------------
--------Process sentinel-------
-	 PID:	2
-	 parentPID:	1
-	 priority:	7
-	 state ():	0
-	 numChild ():	0
------------------------
--------Process testcase_main-------
-	 PID:	3
-	 parentPID:	1
-	 priority:	3
-	 state ():	0
-	 numChild ():	1
------------------------
--------Process XXp1-------
-	 PID:	4
-	 parentPID:	3
-	 priority:	2
-	 state ():	0
-	 numChild ():	2
------------------------
--------Process XXp2-------
-	 PID:	5
-	 parentPID:	4
-	 priority:	5
-	 state ():	0
-	 numChild ():	0
------------------------
--------Process XXp2-------
-	 PID:	6
-	 parentPID:	4
-	 priority:	5
-	 state ():	0
-	 numChild ():	0
------------------------
+testcase_main(): after fork of child 4 -- you should not see this until after XXp1() has created both of its children, and started its first join().  However, you should see it *before* either of the children run.
+testcase_main(): performing join
+Phase 1B TEMPORARY HACK: Manually switching to the first XXp2()
+XXp2(): started -- you should not see this until both XXp1() and testcase_main() are blocked in join().
+XXp2(): arg = 'XXp2'
+XXp2(): This process will terminate immediately.
+XXp1(): first join returned kidpid = 5, status = 5 -- you should see this after the first child terminates, and before the second child even starts.
+XXp1(): performing second join
+Phase 1B TEMPORARY HACK: Manually switching to the second XXp2()
+XXp2(): started -- you should not see this until both XXp1() and testcase_main() are blocked in join().
+XXp2(): arg = 'XXp2'
+XXp2(): This process will terminate immediately.
+XXp1(): second join returned kidpid = 6, status = 5
+testcase_main(): exit status for child 4 is 3
+TESTCASE ENDED: Call counts:   check_io() 0   clockHandler() 0

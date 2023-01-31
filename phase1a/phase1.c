@@ -194,14 +194,9 @@ int fork1(char *name, int(*func)(char *), char *arg, int stacksize, int priority
 
     USLOSS_ContextInit(&ProcessTable[slot].context, ProcessTable[slot].stack, 
                        ProcessTable[slot].stSize, NULL, &trampoline);
-        
-    // fork makes a process, so we call context init here as well
-    // USLOSS_ContextInit(&ProcessTable[i].context, ProcessTable[i].stack, 
-    //                    ProcessTable[i].stSize, NULL, trampoline);
 
     restoreInterrupts();
 
-    //dumpProcesses();
     return ProcessTable[slot].PID;
 }
 
@@ -239,7 +234,6 @@ int join(int *status) {
         child->firstSibling = child->firstSibling->firstSibling;
     }
 
-    // USLOSS_Console("Removed the dead\n");
 
     //no one dead
     if (removed == NULL) {
@@ -255,10 +249,6 @@ int join(int *status) {
     int slot = removed->slot;
 
     cleanEntry(slot);
-    // either have a failed to say it was dead/free
-    // or zero it out to clean up this dead child's slot
-
-    // join is a way to block parent until a child has called quit
 
     restoreInterrupts();
 
@@ -291,9 +281,9 @@ void quit(int status, int switchToPid) {
     CurrProcess->exitState = status;
 
     // just clean the entry since we have no parents to report to
-    if (CurrProcess->parent == NULL) {
-        cleanEntry(CurrProcess->slot);
-    }
+    // if (CurrProcess->parent == NULL) {
+    //     cleanEntry(CurrProcess->slot);
+    // }
 
     // since we quit, decrease count
     procCount--;
@@ -392,6 +382,7 @@ int init(char* usloss) {
 
     pidIncrementer++;
     
+    USLOSS_Console("Phase 1B TEMPORARY HACK: init() manually switching to testcase_main() after using fork1() to create it.\n");
     // calling fork for testcase_main
     fork1("testcase_main", &testcase_mainProc, NULL, USLOSS_MIN_STACK, 3);
 
@@ -432,6 +423,7 @@ int testcase_mainProc(char* usloss) {
     if (res != 0) {
         USLOSS_Console("ERROR ON MAIN, need to see testcase for msg");
     }
+    USLOSS_Console("Phase 1B TEMPORARY HACK: testcase_main() returned, simulation\n");
     USLOSS_Halt(0);
     return 0;
 }

@@ -6,226 +6,52 @@ testcase_main(): started
 EXPECTATION: Attempt to create MAXPROC+2 processes (without calling join() on any of them).  This will work many times but eventually fail because all of the procTable slots are full.  We will only print out info about the failed ones.
 testcase_main(): start 52 processes
 Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
-phase2_start_service_processes() called -- currently a NOP
-phase3_start_service_processes() called -- currently a NOP
-phase4_start_service_processes() called -- currently a NOP
-phase5_start_service_processes() called -- currently a NOP
-testcase_main(): started
-EXPECTATION: Attempt to create MAXPROC+2 processes (without calling join() on any of them).  This will work many times but eventually fail because all of the procTable slots are full.  We will only print out info about the failed ones.
-testcase_main(): start 52 processes
 Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
-phase2_start_service_processes() called -- currently a NOP
-phase3_start_service_processes() called -- currently a NOP
-phase4_start_service_processes() called -- currently a NOP
-phase5_start_service_processes() called -- currently a NOP
-testcase_main(): started
-EXPECTATION: Attempt to create MAXPROC+2 processes (without calling join() on any of them).  This will work many times but eventually fail because all of the procTable slots are full.  We will only print out info about the failed ones.
-testcase_main(): start 52 processes
 Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
-phase2_start_service_processes() called -- currently a NOP
-phase3_start_service_processes() called -- currently a NOP
-phase4_start_service_processes() called -- currently a NOP
-phase5_start_service_processes() called -- currently a NOP
-testcase_main(): started
-EXPECTATION: Attempt to create MAXPROC+2 processes (without calling join() on any of them).  This will work many times but eventually fail because all of the procTable slots are full.  We will only print out info about the failed ones.
-testcase_main(): start 52 processes
 Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
-phase2_start_service_processes() called -- currently a NOP
-phase3_start_service_processes() called -- currently a NOP
-phase4_start_service_processes() called -- currently a NOP
-phase5_start_service_processes() called -- currently a NOP
-testcase_main(): started
-EXPECTATION: Attempt to create MAXPROC+2 processes (without calling join() on any of them).  This will work many times but eventually fail because all of the procTable slots are full.  We will only print out info about the failed ones.
-testcase_main(): start 52 processes
 Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
-phase2_start_service_processes() called -- currently a NOP
-phase3_start_service_processes() called -- currently a NOP
-phase4_start_service_processes() called -- currently a NOP
-phase5_start_service_processes() called -- currently a NOP
-testcase_main(): started
-EXPECTATION: Attempt to create MAXPROC+2 processes (without calling join() on any of them).  This will work many times but eventually fail because all of the procTable slots are full.  We will only print out info about the failed ones.
-testcase_main(): start 52 processes
 Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
-phase2_start_service_processes() called -- currently a NOP
-phase3_start_service_processes() called -- currently a NOP
-phase4_start_service_processes() called -- currently a NOP
-phase5_start_service_processes() called -- currently a NOP
-testcase_main(): started
-EXPECTATION: Attempt to create MAXPROC+2 processes (without calling join() on any of them).  This will work many times but eventually fail because all of the procTable slots are full.  We will only print out info about the failed ones.
-testcase_main(): start 52 processes
 Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
-phase2_start_service_processes() called -- currently a NOP
-phase3_start_service_processes() called -- currently a NOP
-phase4_start_service_processes() called -- currently a NOP
-phase5_start_service_processes() called -- currently a NOP
-testcase_main(): started
-EXPECTATION: Attempt to create MAXPROC+2 processes (without calling join() on any of them).  This will work many times but eventually fail because all of the procTable slots are full.  We will only print out info about the failed ones.
-testcase_main(): start 52 processes
 Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
-phase2_start_service_processes() called -- currently a NOP
-phase3_start_service_processes() called -- currently a NOP
-phase4_start_service_processes() called -- currently a NOP
-phase5_start_service_processes() called -- currently a NOP
-testcase_main(): started
-EXPECTATION: Attempt to create MAXPROC+2 processes (without calling join() on any of them).  This will work many times but eventually fail because all of the procTable slots are full.  We will only print out info about the failed ones.
-testcase_main(): start 52 processes
 Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
-phase2_start_service_processes() called -- currently a NOP
-phase3_start_service_processes() called -- currently a NOP
-phase4_start_service_processes() called -- currently a NOP
-phase5_start_service_processes() called -- currently a NOP
-testcase_main(): started
-EXPECTATION: Attempt to create MAXPROC+2 processes (without calling join() on any of them).  This will work many times but eventually fail because all of the procTable slots are full.  We will only print out info about the failed ones.
-testcase_main(): start 52 processes
 Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
-phase2_start_service_processes() called -- currently a NOP
-phase3_start_service_processes() called -- currently a NOP
-phase4_start_service_processes() called -- currently a NOP
-phase5_start_service_processes() called -- currently a NOP
-testcase_main(): started
-EXPECTATION: Attempt to create MAXPROC+2 processes (without calling join() on any of them).  This will work many times but eventually fail because all of the procTable slots are full.  We will only print out info about the failed ones.
-testcase_main(): start 52 processes
 Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
-phase2_start_service_processes() called -- currently a NOP
-phase3_start_service_processes() called -- currently a NOP
-phase4_start_service_processes() called -- currently a NOP
-phase5_start_service_processes() called -- currently a NOP
-testcase_main(): started
-EXPECTATION: Attempt to create MAXPROC+2 processes (without calling join() on any of them).  This will work many times but eventually fail because all of the procTable slots are full.  We will only print out info about the failed ones.
-testcase_main(): start 52 processes
 Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
-phase2_start_service_processes() called -- currently a NOP
-phase3_start_service_processes() called -- currently a NOP
-phase4_start_service_processes() called -- currently a NOP
-phase5_start_service_processes() called -- currently a NOP
-testcase_main(): fork1() failed: i=1, pid is -1.
-testcase_main(): fork1() failed: i=2, pid is -1.
-testcase_main(): fork1() failed: i=3, pid is -1.
-testcase_main(): fork1() failed: i=4, pid is -1.
-testcase_main(): fork1() failed: i=5, pid is -1.
-testcase_main(): fork1() failed: i=6, pid is -1.
-testcase_main(): fork1() failed: i=7, pid is -1.
-testcase_main(): fork1() failed: i=8, pid is -1.
-testcase_main(): fork1() failed: i=9, pid is -1.
-testcase_main(): fork1() failed: i=10, pid is -1.
-testcase_main(): fork1() failed: i=11, pid is -1.
-testcase_main(): fork1() failed: i=12, pid is -1.
-testcase_main(): fork1() failed: i=13, pid is -1.
-testcase_main(): fork1() failed: i=14, pid is -1.
-testcase_main(): fork1() failed: i=15, pid is -1.
-testcase_main(): fork1() failed: i=16, pid is -1.
-testcase_main(): fork1() failed: i=17, pid is -1.
-testcase_main(): fork1() failed: i=18, pid is -1.
-testcase_main(): fork1() failed: i=19, pid is -1.
-testcase_main(): fork1() failed: i=20, pid is -1.
-testcase_main(): fork1() failed: i=21, pid is -1.
-testcase_main(): fork1() failed: i=22, pid is -1.
-testcase_main(): fork1() failed: i=23, pid is -1.
-testcase_main(): fork1() failed: i=24, pid is -1.
-testcase_main(): fork1() failed: i=25, pid is -1.
-testcase_main(): fork1() failed: i=26, pid is -1.
-testcase_main(): fork1() failed: i=27, pid is -1.
-testcase_main(): fork1() failed: i=28, pid is -1.
-testcase_main(): fork1() failed: i=29, pid is -1.
-testcase_main(): fork1() failed: i=30, pid is -1.
-testcase_main(): fork1() failed: i=31, pid is -1.
-testcase_main(): fork1() failed: i=32, pid is -1.
-testcase_main(): fork1() failed: i=33, pid is -1.
-testcase_main(): fork1() failed: i=34, pid is -1.
-testcase_main(): fork1() failed: i=35, pid is -1.
-testcase_main(): fork1() failed: i=36, pid is -1.
-testcase_main(): fork1() failed: i=37, pid is -1.
-testcase_main(): fork1() failed: i=38, pid is -1.
-testcase_main(): fork1() failed: i=39, pid is -1.
-testcase_main(): fork1() failed: i=40, pid is -1.
-testcase_main(): fork1() failed: i=41, pid is -1.
-testcase_main(): fork1() failed: i=42, pid is -1.
-testcase_main(): fork1() failed: i=43, pid is -1.
-testcase_main(): fork1() failed: i=44, pid is -1.
-testcase_main(): fork1() failed: i=45, pid is -1.
-testcase_main(): fork1() failed: i=46, pid is -1.
-testcase_main(): fork1() failed: i=47, pid is -1.
-testcase_main(): fork1() failed: i=48, pid is -1.
-testcase_main(): fork1() failed: i=49, pid is -1.
-testcase_main(): fork1() failed: i=50, pid is -1.
-testcase_main(): fork1() failed: i=51, pid is -1.
--------Process init-------
-	 PID:	1
-	 priority:	6
-	 state ():	0
-	 numChild ():	1
------------------------
--------Process sentinel-------
-	 PID:	2
-	 parentPID:	1
-	 priority:	7
-	 state ():	0
-	 numChild ():	0
------------------------
-testcase_main(): Calling join() on 52 processes.  The number of 'failed' calls here should be the same as the number of 'failed' fork1() calls.
-testcase_main(): join() failed: i=0, pid is -2.
-testcase_main(): join() failed: i=1, pid is -2.
-testcase_main(): join() failed: i=2, pid is -2.
-testcase_main(): join() failed: i=3, pid is -2.
-testcase_main(): join() failed: i=4, pid is -2.
-testcase_main(): join() failed: i=5, pid is -2.
-testcase_main(): join() failed: i=6, pid is -2.
-testcase_main(): join() failed: i=7, pid is -2.
-testcase_main(): join() failed: i=8, pid is -2.
-testcase_main(): join() failed: i=9, pid is -2.
-testcase_main(): join() failed: i=10, pid is -2.
-testcase_main(): join() failed: i=11, pid is -2.
-testcase_main(): join() failed: i=12, pid is -2.
-testcase_main(): join() failed: i=13, pid is -2.
-testcase_main(): join() failed: i=14, pid is -2.
-testcase_main(): join() failed: i=15, pid is -2.
-testcase_main(): join() failed: i=16, pid is -2.
-testcase_main(): join() failed: i=17, pid is -2.
-testcase_main(): join() failed: i=18, pid is -2.
-testcase_main(): join() failed: i=19, pid is -2.
-testcase_main(): join() failed: i=20, pid is -2.
-testcase_main(): join() failed: i=21, pid is -2.
-testcase_main(): join() failed: i=22, pid is -2.
-testcase_main(): join() failed: i=23, pid is -2.
-testcase_main(): join() failed: i=24, pid is -2.
-testcase_main(): join() failed: i=25, pid is -2.
-testcase_main(): join() failed: i=26, pid is -2.
-testcase_main(): join() failed: i=27, pid is -2.
-testcase_main(): join() failed: i=28, pid is -2.
-testcase_main(): join() failed: i=29, pid is -2.
-testcase_main(): join() failed: i=30, pid is -2.
-testcase_main(): join() failed: i=31, pid is -2.
-testcase_main(): join() failed: i=32, pid is -2.
-testcase_main(): join() failed: i=33, pid is -2.
-testcase_main(): join() failed: i=34, pid is -2.
-testcase_main(): join() failed: i=35, pid is -2.
-testcase_main(): join() failed: i=36, pid is -2.
-testcase_main(): join() failed: i=37, pid is -2.
-testcase_main(): join() failed: i=38, pid is -2.
-testcase_main(): join() failed: i=39, pid is -2.
-testcase_main(): join() failed: i=40, pid is -2.
-testcase_main(): join() failed: i=41, pid is -2.
-testcase_main(): join() failed: i=42, pid is -2.
-testcase_main(): join() failed: i=43, pid is -2.
-testcase_main(): join() failed: i=44, pid is -2.
-testcase_main(): join() failed: i=45, pid is -2.
-testcase_main(): join() failed: i=46, pid is -2.
-testcase_main(): join() failed: i=47, pid is -2.
-testcase_main(): join() failed: i=48, pid is -2.
-testcase_main(): join() failed: i=49, pid is -2.
-testcase_main(): join() failed: i=50, pid is -2.
-testcase_main(): join() failed: i=51, pid is -2.
--------Process init-------
-	 PID:	1
-	 priority:	6
-	 state ():	0
-	 numChild ():	1
------------------------
--------Process sentinel-------
-	 PID:	2
-	 parentPID:	1
-	 priority:	7
-	 state ():	0
-	 numChild ():	0
------------------------
+Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
+Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
+Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
+Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
+Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
+Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
+Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
+Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
+Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
+Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
+Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
+Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
+Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
+Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
+Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
+Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
+Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
+Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
+Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
+Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
+Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
+Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
+Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
+Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
+Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
+Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
+Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
+Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
+Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
+Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
+Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
+Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
+Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
+Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
+Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
+Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
+ERROR: still had children
 TESTCASE ENDED: Call counts:   check_io() 0   clockHandler() 0

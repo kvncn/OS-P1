@@ -10,3 +10,7 @@ Phase 1B TEMPORARY HACK: Manually switching to XXp2()
 -2 returned, which is correct!
 -2 returned, which is correct!
 -2 returned, which is correct!
+testcase_main(): created XXp2 with pid = 4
+testcase_main(): calling join
+testcase_main(): join returned pid = 4, status = 0
+TESTCASE ENDED: Call counts:   check_io() 0   clockHandler() 0

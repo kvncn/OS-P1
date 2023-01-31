@@ -15,6 +15,7 @@ XXp1(): fork() rc=5
 	 priority:	6
 	 state ():	0
 	 numChild ():	2
+	 exitState:	0
 -----------------------
 -------Process sentinel-------
 	 PID:	2
@@ -22,6 +23,7 @@ XXp1(): fork() rc=5
 	 priority:	7
 	 state ():	0
 	 numChild ():	0
+	 exitState:	0
 -----------------------
 -------Process testcase_main-------
 	 PID:	3
@@ -29,6 +31,7 @@ XXp1(): fork() rc=5
 	 priority:	3
 	 state ():	0
 	 numChild ():	1
+	 exitState:	0
 -----------------------
 -------Process XXp1-------
 	 PID:	4
@@ -36,6 +39,7 @@ XXp1(): fork() rc=5
 	 priority:	2
 	 state ():	0
 	 numChild ():	1
+	 exitState:	0
 -----------------------
 -------Process XXp2-------
 	 PID:	5
@@ -43,6 +47,7 @@ XXp1(): fork() rc=5
 	 priority:	1
 	 state ():	2
 	 numChild ():	0
+	 exitState:	3
 -----------------------
 XXp1(): This process will terminate.  This should cause an error check in quit() to fire, report an error, and kill the simulation.
 ERROR: still had children

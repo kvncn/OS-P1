@@ -7,3 +7,13 @@ EXPECTATION: XXp1 should run promptly, as it is high priority; XXp2 should run o
 Phase 1B TEMPORARY HACK: Manually switching to the first XXp1()
 XXp1(): started
 XXp1(): arg = 'XXp1'
+testcase_main(): after fork of child 4 -- you should not see this until XXp1 has completed.
+testcase_main(): after fork of child 5 -- you should see this before XXp2 runs.
+testcase_main(): performing first join
+testcase_main(): exit status for child 4 is 3
+testcase_main(): performing second join -- you should see this before XXp2 runs.
+Phase 1B TEMPORARY HACK: Manually switching to the second XXp1()
+XXp2(): started
+XXp2(): arg = 'XXp2'
+testcase_main(): exit status for child 5 is 5
+TESTCASE ENDED: Call counts:   check_io() 0   clockHandler() 0
