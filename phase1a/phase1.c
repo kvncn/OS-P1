@@ -215,7 +215,7 @@ int join(int *status) {
     
     // is one of the children already dead?
     // do we remove the child from process table? YES, here
-    if (CurrProcess->numChildren == 0 && CurrProcess->joinWait == 0) {
+    if (CurrProcess->numChildren == 0) {
         // USLOSS_Console("CURR PID %s\n", CurrProcess->name);
         // USLOSS_Console("NO CHILDREN\n");
         // USLOSS_Halt(4);
@@ -301,8 +301,13 @@ void quit(int status, int switchToPid) {
 
     procCount--;
     
-    
-    TEMP_switchTo(switchToPid);
+    for (int i = 0; i < MAXPROC; i++) {
+        if (ProcessTable[i].PID == switchToPid) {
+            CurrProcess = &ProcessTable[i];
+            break;
+        }
+    }
+    USLOSS_ContextSwitch(NULL, &CurrProcess->context);
 }
 
 /**
@@ -343,7 +348,6 @@ int getpid() {
  * for us.
  */
 void TEMP_switchTo(int newpid) {
-    USLOSS_Console("IM TRYNNA GET THiS %d\n", newpid);
     Process* oldProc = CurrProcess;
     for (int i = 0; i < MAXPROC; i++) {
         if (ProcessTable[i].PID == newpid) {
@@ -351,8 +355,6 @@ void TEMP_switchTo(int newpid) {
             break;
         }
     }
-    USLOSS_Console("NOW AFTER WE SWITCH: \n");
-    print_process(*CurrProcess);
     //CurrProcess = &ProcessTable[slotFinder(newpid)];
     // should never revert back to init yk
     // so we block that from happening
