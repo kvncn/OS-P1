@@ -76,7 +76,6 @@ void TEMP_switchTo(int newpid);
 // helpers
 void kernelCheck(char* proc);
 void trampoline();
-void print_process(Process proc);
 void disableInterrupts();
 void restoreInterrupts();
 void cleanEntry(int idx);
@@ -320,22 +319,6 @@ void dumpProcesses(void) {
     }
 }
 
-/**
- * Helper for dumpProcesses, prints one specific process
- */
-void print_process(Process proc) {
-    USLOSS_Console("-------Process %s-------\n", proc.name);
-    USLOSS_Console("\t PID:\t%d\n", proc.PID);
-    if (proc.parent != NULL) {
-        USLOSS_Console("\t parentPID:\t%d\n", proc.parent->PID);
-    }
-    USLOSS_Console("\t priority:\t%d\n", proc.priority);
-    USLOSS_Console("\t state ():\t%d\n", proc.state);
-    USLOSS_Console("\t numChild ():\t%d\n", proc.numChildren);
-    USLOSS_Console("\t exitState:\t%d\n", proc.exitState);
-    USLOSS_Console("-----------------------\n");
-}
-
 int getpid() {
     kernelCheck("getpid");
     disableInterrupts();
@@ -489,7 +472,7 @@ void disableInterrupts() {
  * Restore all USLOSS interrupts
  */
 void restoreInterrupts() {
-	int res = USLOSS_PsrSet(USLOSS_PsrGet() | ~USLOSS_PSR_CURRENT_INT);
+	int res = USLOSS_PsrSet(USLOSS_PsrGet() | USLOSS_PSR_CURRENT_INT);
 }
 
 /**
