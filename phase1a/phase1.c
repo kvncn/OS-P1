@@ -158,6 +158,9 @@ int fork1(char *name, int(*func)(char *), char *arg, int stacksize, int priority
     procCount++;
 
     int slot = slotFinder(pidIncrementer);
+    if (slot == -1) {
+        return -1;
+    }
 
     strcpy(ProcessTable[slot].name, name);
 
