@@ -32,6 +32,8 @@ struct Process {
     // runnable, blocked for join, blocked in zap, 
     int state; 
 
+    int joinWait;
+
     // every process needs a stack allocated to it in mem, so this is where we
     // have it
     void* stack;
@@ -153,7 +155,6 @@ int fork1(char *name, int(*func)(char *), char *arg, int stacksize, int priority
         return -2;
     }
 
-
     procCount++;
 
     int slot = slotFinder(pidIncrementer);
@@ -193,11 +194,13 @@ int join(int *status) {
 
     disableInterrupts();
 
+    
     // is one of the children already dead?
     // do we remove the child from process table? YES, here
-    if (CurrProcess->numChildren == 0) {
-        USLOSS_Console("NO CHILDREN");
-        USLOSS_Halt(4);
+    if (CurrProcess->numChildren == 0 && CurrProcess->joinWait == 0) {
+        // USLOSS_Console("CURR PID %s\n", CurrProcess->name);
+        // USLOSS_Console("NO CHILDREN\n");
+        // USLOSS_Halt(4);
         return -2;
     }
 
@@ -212,20 +215,19 @@ int join(int *status) {
         CurrProcess->firstChild = child->firstSibling;
     // remove from rest, first dead child we find
     } else {
-        for (int i = 0; i < CurrProcess->numChildren; i++) {
-            if (child->firstSibling != NULL && child->firstSibling->state == DEAD) {
-                removed = child->firstSibling;
-                break;
-            } 
+        while (child->firstSibling->state != DEAD) {
             child = child->firstSibling;
         }
+        removed = child->firstSibling;
         child->firstSibling = child->firstSibling->firstSibling;
     }
 
     // no one dead
-    if (removed == NULL) {
-        return -2;
-    }
+    // if (removed == NULL) {
+    //     return -2;
+    // }
+
+    CurrProcess->joinWait--;
 
     CurrProcess->numChildren--;
 
@@ -257,7 +259,7 @@ void quit(int status, int switchToPid) {
     // disable interrupts to deal with them
 
     // if parent dies before all children, halt sim
-    if (CurrProcess->numChildren > 0) {
+    if (CurrProcess->numChildren > 0 || CurrProcess->joinWait > 1) {
         USLOSS_Console("ERROR: still had children\n");
         USLOSS_Halt(3);
     }
@@ -276,6 +278,7 @@ void quit(int status, int switchToPid) {
         cleanEntry(CurrProcess->slot);
         // don't need to save state if no parent to wake up, jut get out
     } else {
+        CurrProcess->parent->joinWait++;
         if (CurrProcess->parent->state == BLOCKED_JOIN) {
             CurrProcess->parent->state = RUNNABLE;
         }
@@ -362,7 +365,7 @@ int init(char* usloss) {
     while (1) {
         res = join(&res);
         if (res == -2) 
-            USLOSS_Console("ERROR MESSAGE HERE, need to see testcases for msg");
+            USLOSS_Console("ERROR: init() received -2 in infinite join() loop");
             break;
     }
     
@@ -456,6 +459,7 @@ void cleanEntry(int idx) {
     ProcessTable[idx].firstSibling = NULL;
     ProcessTable[idx].exitState = 0;
     ProcessTable[idx].slot = 0;
+    ProcessTable[idx].joinWait = 0;
     
 }
 

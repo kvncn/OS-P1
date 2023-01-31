@@ -1,0 +1,5 @@
+phase2_start_service_processes() called -- currently a NOP
+phase3_start_service_processes() called -- currently a NOP
+phase4_start_service_processes() called -- currently a NOP
+phase5_start_service_processes() called -- currently a NOP
+NO CHILDRENTESTCASE ENDED: Call counts:   check_io() 0   clockHandler() 0
