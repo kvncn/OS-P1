@@ -279,13 +279,10 @@ void quit(int status, int switchToPid) {
     // disable interrupts to deal with them
 
     // if parent dies before all children, halt sim
-    if (CurrProcess->numChildren > 0 || CurrProcess->joinWait > 1) {
+    if (CurrProcess->numChildren > 0) {
         USLOSS_Console("ERROR: still had children\n");
         USLOSS_Halt(3);
     }
-
-    CurrProcess->parent->numChildren--;
-    
 
     // if this is the first child, make the next child the first sibling
     // if (CurrProcess->parent->firstChild->PID == CurrProcess->PID) {
@@ -295,9 +292,12 @@ void quit(int status, int switchToPid) {
     CurrProcess->state = DEAD;
     CurrProcess->exitState = status;
 
+    // just clean the entry since we have no parents to report to
     if (CurrProcess->parent == NULL) {
         cleanEntry(CurrProcess->slot);
         procCount--;
+    } else {
+        CurrProcess->parent->numChildren--;
     }
         // don't need to save state if no parent to wake up, jut get out
     // } else {
@@ -317,6 +317,7 @@ void quit(int status, int switchToPid) {
     //     -> check if it is waiting/blocked etc..., only wake it up if
     //        it was blocked by join
     //        how to wake up parent? change proc->state
+    
     TEMP_switchTo(switchToPid);
 }
 
@@ -359,9 +360,12 @@ void TEMP_switchTo(int newpid) {
     for (int i = 0; i < MAXPROC; i++) {
         if (ProcessTable[i].PID == newpid) {
             CurrProcess = &ProcessTable[i];
+            break;
         }
     }
     //CurrProcess = &ProcessTable[slotFinder(newpid)];
+    // should never revert back to init yk
+    // so we block that from happening
     USLOSS_ContextSwitch(&oldProc->context, &CurrProcess->context);
 }
 
