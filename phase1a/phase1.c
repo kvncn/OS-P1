@@ -268,7 +268,7 @@ void quit(int status, int switchToPid) {
 
     // if parent dies before all children, halt sim
     if (CurrProcess->numChildren > 0) {
-        USLOSS_Console("ERROR: still had children\n");
+        USLOSS_Console("ERROR: Process pid %d called quit() while it still had children.\n", CurrProcess->PID);
         USLOSS_Halt(3);
     }
 
@@ -436,8 +436,8 @@ int testcase_mainProc(char* usloss) {
  */
 void kernelCheck(char* proc) {
     // means we are running in user mode, so we halt simulation
-    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE == 0)) {
-        USLOSS_Console("ERROR: halting blah blah blah need to check testcases");
+    if ((USLOSS_PsrGet() & USLOSS_PSR_CURRENT_MODE) == 1) {
+        USLOSS_Console("ERROR: Someone attempted to call %s while in user mode!\n", proc);
         USLOSS_Halt(1);
     }
 }
