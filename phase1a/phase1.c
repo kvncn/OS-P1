@@ -316,7 +316,7 @@ void dumpProcesses(void) {
         else if (slot->state == RUNNABLE)
             USLOSS_Console("Runnable\n");
         else
-            USLOSS_Console("Terminated(%d)\n", slot->state);
+            USLOSS_Console("Terminated(%d)\n", slot->exitState);
     }
 }
 
