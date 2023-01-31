@@ -40,7 +40,7 @@ struct Process {
     // a process also has a main function, and that main function takes
     // args (char*)
     int (*processMain)(char* );
-    char* args;
+    char args[MAXARG];
 
     // before process actually dies (zombie process), save its exit state for 
     // quit, cleaned up by parent on quit
@@ -95,7 +95,6 @@ int procCount;
  */
 void phase1_init(void) {
     kernelCheck("phase1_init");
-
     for (int i = 0; i < MAXPROC; i++) {
         cleanEntry(i); 
     }
@@ -134,7 +133,6 @@ void startProcesses(void) {
     // do we disable interrupts and enable them here?
 
     CurrProcess->state = RUNNING;
-    USLOSS_Console("STARTProCESSES\n");
     USLOSS_ContextSwitch(NULL, &CurrProcess->context);
 }
  
@@ -143,7 +141,6 @@ int fork1(char *name, int(*func)(char *), char *arg, int stacksize, int priority
 
     disableInterrupts();
 
-    USLOSS_Console("fork1\n");
     // problem with args or num processes
     if (name == NULL || strlen(name) > MAXNAME || func == NULL || 
         priority < LOW_PRIORITY || priority > HIGH_PRIORITY || 
@@ -196,7 +193,6 @@ int join(int *status) {
 
     disableInterrupts();
 
-    USLOSS_Console("join\n");
     // is one of the children already dead?
     // do we remove the child from process table? YES, here
     if (CurrProcess->numChildren == 0) {
@@ -256,8 +252,6 @@ void quit(int status, int switchToPid) {
     // never returns, goes inside other funcs, so 
     // no need to re enable
     disableInterrupts();
-
-    USLOSS_Console("quit\n");
 
     // i am not runnable, possible rc, if a contextswitch happens
     // disable interrupts to deal with them
@@ -335,7 +329,6 @@ void print_process(Process proc) {
  * for us.
  */
 void TEMP_switchTo(int newpid) {
-    USLOSS_Console("switchTp\n");
     // assuming that pid corresponds to the index in the PTable
     Process* oldProc = CurrProcess;
     for (int i = 0; i < MAXPROC; i++) {
@@ -357,15 +350,12 @@ int init(char* usloss) {
 	phase3_start_service_processes();
 	phase4_start_service_processes();
 	phase5_start_service_processes();
-    printf("init before fork\n");
     
     // calling fork for sentinel
     fork1("sentinel", &sentinel, NULL, USLOSS_MIN_STACK, LOW_PRIORITY);
     
     // calling fork for testcase_main
     fork1("testcase_main", &testcase_mainProc, NULL, USLOSS_MIN_STACK, 3);
-
-    printf("init after fork\n");
     
     int res; 
     
@@ -454,6 +444,7 @@ void restoreInterrupts() {
  * initialize it/quit process
  */
 void cleanEntry(int idx) {
+    ProcessTable[idx].name[0] = '\0';
     ProcessTable[idx].args[0] = '\0';
     ProcessTable[idx].PID = 0;
     ProcessTable[idx].stack = NULL;
@@ -464,7 +455,8 @@ void cleanEntry(int idx) {
     ProcessTable[idx].numChildren = 0;
     ProcessTable[idx].firstSibling = NULL;
     ProcessTable[idx].exitState = 0;
-    ProcessTable[idx].slot = idx;
+    ProcessTable[idx].slot = 0;
+    
 }
 
 /**
