@@ -4,19 +4,335 @@ phase4_start_service_processes() called -- currently a NOP
 phase5_start_service_processes() called -- currently a NOP
 Phase 1B TEMPORARY HACK: init() manually switching to testcase_main() after using fork1() to create it.
 testcase_main(): started
-EXPECTATION: main() creates XXp1.  XXp1 creates XXp2, and then immediately returns before calling join(); the Phase 1 code should thus call quit() on that process.  Although XXp2 is higher priority than XXp1 (meaning that it ran to completion before this code ran), the code should complain because you quit() a process before calling join() on all of your children.
+EXPECTATION: main() creates many XXp1 children, and join()s all of them; then repeats twice.  Process count is large enough to fill process table - meaning that students must free old process table entries.
+
+*** Start of round 0 of the fork()/join() operations ***
 Phase 1B TEMPORARY HACK: Manually switching to XXp1()
-Phase 1B TEMPORARY HACK: Manually switching to XXp2()
-XXp2(): started
-XXp2(): arg = 'XXp2'
-XXp2(): terminating!
-XXp1(): fork() rc=5
+XXp1(): started, pid = 4
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+testcase_main(): after fork of child 4 -- you will see this after the just-created child runs, and completes.  So expect an alternation of XXp1() output, followed by these fork messages.
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 5
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+testcase_main(): after fork of child 5 -- you will see this after the just-created child runs, and completes.  So expect an alternation of XXp1() output, followed by these fork messages.
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 6
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+testcase_main(): after fork of child 6 -- you will see this after the just-created child runs, and completes.  So expect an alternation of XXp1() output, followed by these fork messages.
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 7
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+testcase_main(): after fork of child 7 -- you will see this after the just-created child runs, and completes.  So expect an alternation of XXp1() output, followed by these fork messages.
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 8
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+testcase_main(): after fork of child 8 -- you will see this after the just-created child runs, and completes.  So expect an alternation of XXp1() output, followed by these fork messages.
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 9
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+testcase_main(): after fork of child 9 -- you will see this after the just-created child runs, and completes.  So expect an alternation of XXp1() output, followed by these fork messages.
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 10
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+testcase_main(): after fork of child 10 -- you will see this after the just-created child runs, and completes.  So expect an alternation of XXp1() output, followed by these fork messages.
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 11
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+testcase_main(): after fork of child 11 -- you will see this after the just-created child runs, and completes.  So expect an alternation of XXp1() output, followed by these fork messages.
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 12
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+testcase_main(): after fork of child 12 -- you will see this after the just-created child runs, and completes.  So expect an alternation of XXp1() output, followed by these fork messages.
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 13
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+testcase_main(): after fork of child 13 -- you will see this after the just-created child runs, and completes.  So expect an alternation of XXp1() output, followed by these fork messages.
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 14
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+testcase_main(): after fork of child 14 -- you will see this after the just-created child runs, and completes.  So expect an alternation of XXp1() output, followed by these fork messages.
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 15
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+testcase_main(): after fork of child 15 -- you will see this after the just-created child runs, and completes.  So expect an alternation of XXp1() output, followed by these fork messages.
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 16
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+testcase_main(): after fork of child 16 -- you will see this after the just-created child runs, and completes.  So expect an alternation of XXp1() output, followed by these fork messages.
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 17
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+testcase_main(): after fork of child 17 -- you will see this after the just-created child runs, and completes.  So expect an alternation of XXp1() output, followed by these fork messages.
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 18
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+testcase_main(): after fork of child 18 -- you will see this after the just-created child runs, and completes.  So expect an alternation of XXp1() output, followed by these fork messages.
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 19
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+testcase_main(): after fork of child 19 -- you will see this after the just-created child runs, and completes.  So expect an alternation of XXp1() output, followed by these fork messages.
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 20
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+testcase_main(): after fork of child 20 -- you will see this after the just-created child runs, and completes.  So expect an alternation of XXp1() output, followed by these fork messages.
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 21
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+testcase_main(): after fork of child 21 -- you will see this after the just-created child runs, and completes.  So expect an alternation of XXp1() output, followed by these fork messages.
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 22
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+testcase_main(): after fork of child 22 -- you will see this after the just-created child runs, and completes.  So expect an alternation of XXp1() output, followed by these fork messages.
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 23
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+testcase_main(): after fork of child 23 -- you will see this after the just-created child runs, and completes.  So expect an alternation of XXp1() output, followed by these fork messages.
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 24
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+testcase_main(): after fork of child 24 -- you will see this after the just-created child runs, and completes.  So expect an alternation of XXp1() output, followed by these fork messages.
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 25
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+testcase_main(): after fork of child 25 -- you will see this after the just-created child runs, and completes.  So expect an alternation of XXp1() output, followed by these fork messages.
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 26
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+testcase_main(): after fork of child 26 -- you will see this after the just-created child runs, and completes.  So expect an alternation of XXp1() output, followed by these fork messages.
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 27
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+testcase_main(): after fork of child 27 -- you will see this after the just-created child runs, and completes.  So expect an alternation of XXp1() output, followed by these fork messages.
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 28
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+testcase_main(): after fork of child 28 -- you will see this after the just-created child runs, and completes.  So expect an alternation of XXp1() output, followed by these fork messages.
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 29
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+testcase_main(): after fork of child 29 -- you will see this after the just-created child runs, and completes.  So expect an alternation of XXp1() output, followed by these fork messages.
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 30
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+testcase_main(): after fork of child 30 -- you will see this after the just-created child runs, and completes.  So expect an alternation of XXp1() output, followed by these fork messages.
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 31
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+testcase_main(): after fork of child 31 -- you will see this after the just-created child runs, and completes.  So expect an alternation of XXp1() output, followed by these fork messages.
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 32
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+testcase_main(): after fork of child 32 -- you will see this after the just-created child runs, and completes.  So expect an alternation of XXp1() output, followed by these fork messages.
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 33
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+testcase_main(): after fork of child 33 -- you will see this after the just-created child runs, and completes.  So expect an alternation of XXp1() output, followed by these fork messages.
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 34
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+testcase_main(): after fork of child 34 -- you will see this after the just-created child runs, and completes.  So expect an alternation of XXp1() output, followed by these fork messages.
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 35
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+testcase_main(): after fork of child 35 -- you will see this after the just-created child runs, and completes.  So expect an alternation of XXp1() output, followed by these fork messages.
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 36
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+testcase_main(): after fork of child 36 -- you will see this after the just-created child runs, and completes.  So expect an alternation of XXp1() output, followed by these fork messages.
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 37
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+testcase_main(): after fork of child 37 -- you will see this after the just-created child runs, and completes.  So expect an alternation of XXp1() output, followed by these fork messages.
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 38
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+testcase_main(): after fork of child 38 -- you will see this after the just-created child runs, and completes.  So expect an alternation of XXp1() output, followed by these fork messages.
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 39
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+testcase_main(): after fork of child 39 -- you will see this after the just-created child runs, and completes.  So expect an alternation of XXp1() output, followed by these fork messages.
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 40
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+testcase_main(): after fork of child 40 -- you will see this after the just-created child runs, and completes.  So expect an alternation of XXp1() output, followed by these fork messages.
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 41
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+testcase_main(): after fork of child 41 -- you will see this after the just-created child runs, and completes.  So expect an alternation of XXp1() output, followed by these fork messages.
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 42
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+testcase_main(): after fork of child 42 -- you will see this after the just-created child runs, and completes.  So expect an alternation of XXp1() output, followed by these fork messages.
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 43
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+testcase_main(): after fork of child 43 -- you will see this after the just-created child runs, and completes.  So expect an alternation of XXp1() output, followed by these fork messages.
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 44
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+testcase_main(): after fork of child 44 -- you will see this after the just-created child runs, and completes.  So expect an alternation of XXp1() output, followed by these fork messages.
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 45
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+testcase_main(): after fork of child 45 -- you will see this after the just-created child runs, and completes.  So expect an alternation of XXp1() output, followed by these fork messages.
+
+**************** Calling dumpProcesses() *******************
  PID  PPID  NAME              PRIORITY  STATE
    1     0  init              6         Runnable
    2     1  sentinel          7         Runnable
-   3     1  testcase_main     3         Runnable
-   4     3  XXp1              2         Running
-   5     4  XXp2              1         Terminated(3)
-XXp1(): This process will terminate.  This should cause an error check in quit() to fire, report an error, and kill the simulation.
-ERROR: Process pid 4 called quit() while it still had children.
-TESTCASE ENDED: Call counts:   check_io() 0   clockHandler() 0
+   3     1  testcase_main     3         Running
+   4     3  XXp1              2         Terminated(4)
+   5     3  XXp1              2         Terminated(5)
+   6     3  XXp1              2         Terminated(6)
+   7     3  XXp1              2         Terminated(7)
+   8     3  XXp1              2         Terminated(8)
+   9     3  XXp1              2         Terminated(9)
+  10     3  XXp1              2         Terminated(10)
+  11     3  XXp1              2         Terminated(11)
+  12     3  XXp1              2         Terminated(12)
+  13     3  XXp1              2         Terminated(13)
+  14     3  XXp1              2         Terminated(14)
+  15     3  XXp1              2         Terminated(15)
+  16     3  XXp1              2         Terminated(16)
+  17     3  XXp1              2         Terminated(17)
+  18     3  XXp1              2         Terminated(18)
+  19     3  XXp1              2         Terminated(19)
+  20     3  XXp1              2         Terminated(20)
+  21     3  XXp1              2         Terminated(21)
+  22     3  XXp1              2         Terminated(22)
+  23     3  XXp1              2         Terminated(23)
+  24     3  XXp1              2         Terminated(24)
+  25     3  XXp1              2         Terminated(25)
+  26     3  XXp1              2         Terminated(26)
+  27     3  XXp1              2         Terminated(27)
+  28     3  XXp1              2         Terminated(28)
+  29     3  XXp1              2         Terminated(29)
+  30     3  XXp1              2         Terminated(30)
+  31     3  XXp1              2         Terminated(31)
+  32     3  XXp1              2         Terminated(32)
+  33     3  XXp1              2         Terminated(33)
+  34     3  XXp1              2         Terminated(34)
+  35     3  XXp1              2         Terminated(35)
+  36     3  XXp1              2         Terminated(36)
+  37     3  XXp1              2         Terminated(37)
+  38     3  XXp1              2         Terminated(38)
+  39     3  XXp1              2         Terminated(39)
+  40     3  XXp1              2         Terminated(40)
+  41     3  XXp1              2         Terminated(41)
+  42     3  XXp1              2         Terminated(42)
+  43     3  XXp1              2         Terminated(43)
+  44     3  XXp1              2         Terminated(44)
+  45     3  XXp1              2         Terminated(45)
+**************** end dumpProcesses() *******************
+
+testcase_main(): after join of child 45, status = 45
+testcase_main(): after join of child 44, status = 44
+testcase_main(): after join of child 43, status = 43
+testcase_main(): after join of child 42, status = 42
+testcase_main(): after join of child 41, status = 41
+testcase_main(): after join of child 40, status = 40
+testcase_main(): after join of child 39, status = 39
+testcase_main(): after join of child 38, status = 38
+testcase_main(): after join of child 37, status = 37
+testcase_main(): after join of child 36, status = 36
+testcase_main(): after join of child 35, status = 35
+testcase_main(): after join of child 34, status = 34
+testcase_main(): after join of child 33, status = 33
+testcase_main(): after join of child 32, status = 32
+testcase_main(): after join of child 31, status = 31
+testcase_main(): after join of child 30, status = 30
+testcase_main(): after join of child 29, status = 29
+testcase_main(): after join of child 28, status = 28
+testcase_main(): after join of child 27, status = 27
+testcase_main(): after join of child 26, status = 26
+testcase_main(): after join of child 25, status = 25
+testcase_main(): after join of child 24, status = 24
+testcase_main(): after join of child 23, status = 23
+testcase_main(): after join of child 22, status = 22
+testcase_main(): after join of child 21, status = 21
+testcase_main(): after join of child 20, status = 20
+testcase_main(): after join of child 19, status = 19
+testcase_main(): after join of child 18, status = 18
+testcase_main(): after join of child 17, status = 17
+testcase_main(): after join of child 16, status = 16
+testcase_main(): after join of child 15, status = 15
+testcase_main(): after join of child 14, status = 14
+testcase_main(): after join of child 13, status = 13
+testcase_main(): after join of child 12, status = 12
+testcase_main(): after join of child 11, status = 11
+testcase_main(): after join of child 10, status = 10
+testcase_main(): after join of child 9, status = 9
+testcase_main(): after join of child 8, status = 8
+testcase_main(): after join of child 7, status = 7
+testcase_main(): after join of child 6, status = 6
+testcase_main(): after join of child 5, status = 5
+testcase_main(): after join of child 4, status = 4
+
+*** Start of round 1 of the fork()/join() operations ***
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 46
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+testcase_main(): after fork of child 46 -- you will see this after the just-created child runs, and completes.  So expect an alternation of XXp1() output, followed by these fork messages.
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 47
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+testcase_main(): after fork of child 47 -- you will see this after the just-created child runs, and completes.  So expect an alternation of XXp1() output, followed by these fork messages.
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 48
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+testcase_main(): after fork of child 48 -- you will see this after the just-created child runs, and completes.  So expect an alternation of XXp1() output, followed by these fork messages.
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 49
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+testcase_main(): after fork of child 49 -- you will see this after the just-created child runs, and completes.  So expect an alternation of XXp1() output, followed by these fork messages.
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 50
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+testcase_main(): after fork of child 50 -- you will see this after the just-created child runs, and completes.  So expect an alternation of XXp1() output, followed by these fork messages.

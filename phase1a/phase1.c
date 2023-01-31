@@ -508,5 +508,22 @@ void cleanEntry(int idx) {
  * on its pid
  */
 int slotFinder(int x) {
-    return x % MAXPROC;
+    // cant really do it if we are full of processes
+	if (procCount >= MAXPROC) 
+		return -1;
+	
+	// try to find a good spot
+	int procNum = 0;
+    // here we have the actual index based on pid incrementer % MAXPROC
+	while (ProcessTable[pidIncrementer % MAXPROC].state != FREE) {
+		if (procNum < MAXPROC) {
+            procNum++;
+		    pidIncrementer++;
+        } else {
+            return -1;
+        }
+	}
+
+	// PID updated
+	return pidIncrementer % MAXPROC;
 }
