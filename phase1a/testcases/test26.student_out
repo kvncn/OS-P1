@@ -2,4 +2,10 @@ phase2_start_service_processes() called -- currently a NOP
 phase3_start_service_processes() called -- currently a NOP
 phase4_start_service_processes() called -- currently a NOP
 phase5_start_service_processes() called -- currently a NOP
-NO CHILDRENTESTCASE ENDED: Call counts:   check_io() 0   clockHandler() 0
+testcase_main(): started
+QUICK SUMMARY: Checking to see what happens when you call join() with no children at all.
+Phase 1B TEMPORARY HACK: Manually switching to the recently created XXp1()
+XXp1(): started
+XXp1(): arg = 'XXp1'
+XXp1(): performing join with no children
+XXp1(): value returned by join is -2 expected value was -2

@@ -199,6 +199,8 @@ int fork1(char *name, int(*func)(char *), char *arg, int stacksize, int priority
     //                    ProcessTable[i].stSize, NULL, trampoline);
 
     restoreInterrupts();
+
+    //dumpProcesses();
     return ProcessTable[slot].PID;
 }
 
@@ -207,7 +209,7 @@ int join(int *status) {
 
     disableInterrupts();
 
-    USLOSS_Console("Inside join\n");
+    // USLOSS_Console("Inside join\n");
 
     
     // is one of the children already dead?
@@ -219,13 +221,11 @@ int join(int *status) {
         return -2;
     }
 
-    USLOSS_Console("Checked for children join\n");
+    // USLOSS_Console("Checked for children join\n");
     // remove dead child
     Process* child = CurrProcess->firstChild;
 
     Process* removed = NULL;
-
-    dumpProcesses();
 
     // if dead is head
     if (child->state == DEAD) {
@@ -240,7 +240,7 @@ int join(int *status) {
         child->firstSibling = child->firstSibling->firstSibling;
     }
 
-    USLOSS_Console("Removed the dead\n");
+    // USLOSS_Console("Removed the dead\n");
 
     // no one dead
     // if (removed == NULL) {
@@ -285,11 +285,12 @@ void quit(int status, int switchToPid) {
     }
 
     CurrProcess->parent->numChildren--;
+    
 
     // if this is the first child, make the next child the first sibling
-    if (CurrProcess->parent->firstChild->PID == CurrProcess->PID) {
-        CurrProcess->parent->firstChild = CurrProcess->firstSibling;
-    }
+    // if (CurrProcess->parent->firstChild->PID == CurrProcess->PID) {
+    //     CurrProcess->parent->firstChild = CurrProcess->firstSibling;
+    // }
 
     CurrProcess->state = DEAD;
     CurrProcess->exitState = status;
@@ -297,13 +298,14 @@ void quit(int status, int switchToPid) {
     if (CurrProcess->parent == NULL) {
         cleanEntry(CurrProcess->slot);
         procCount--;
-        // don't need to save state if no parent to wake up, jut get out
-    } else {
-        CurrProcess->parent->joinWait++;
-        if (CurrProcess->parent->state == BLOCKED_JOIN) {
-            CurrProcess->parent->state = RUNNABLE;
-        }
     }
+        // don't need to save state if no parent to wake up, jut get out
+    // } else {
+    //     CurrProcess->parent->joinWait++;
+    //     if (CurrProcess->parent->state == BLOCKED_JOIN) {
+    //         CurrProcess->parent->state = RUNNABLE;
+    //     }
+    // }
     // do we need this??
     // if (CurrProcess->parent->state == BLOCKED_JOIN) {
     //     >> wake up
@@ -315,9 +317,7 @@ void quit(int status, int switchToPid) {
     //     -> check if it is waiting/blocked etc..., only wake it up if
     //        it was blocked by join
     //        how to wake up parent? change proc->state
-
     TEMP_switchTo(switchToPid);
-
 }
 
 /**
@@ -342,6 +342,7 @@ void print_process(Process proc) {
     USLOSS_Console("\t priority:\t%d\n", proc.priority);
     USLOSS_Console("\t state ():\t%d\n", proc.state);
     USLOSS_Console("\t numChild ():\t%d\n", proc.numChildren);
+    USLOSS_Console("\t exitState:\t%d\n", proc.exitState);
     USLOSS_Console("-----------------------\n");
 }
 
@@ -353,7 +354,7 @@ void print_process(Process proc) {
  * for us.
  */
 void TEMP_switchTo(int newpid) {
-    // assuming that pid corresponds to the index in the PTable
+    USLOSS_Console("IM TRYNNA GET THiS %d\n", newpid);
     Process* oldProc = CurrProcess;
     for (int i = 0; i < MAXPROC; i++) {
         if (ProcessTable[i].PID == newpid) {

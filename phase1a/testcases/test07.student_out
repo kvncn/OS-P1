@@ -2,4 +2,48 @@ phase2_start_service_processes() called -- currently a NOP
 phase3_start_service_processes() called -- currently a NOP
 phase4_start_service_processes() called -- currently a NOP
 phase5_start_service_processes() called -- currently a NOP
-NO CHILDRENTESTCASE ENDED: Call counts:   check_io() 0   clockHandler() 0
+testcase_main(): started
+EXPECTATION: main() creates XXp1.  XXp1 creates XXp2, and then immediately returns before calling join(); the Phase 1 code should thus call quit() on that process.  Although XXp2 is higher priority than XXp1 (meaning that it ran to completion before this code ran), the code should complain because you quit() a process before calling join() on all of your children.
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+Phase 1B TEMPORARY HACK: Manually switching to XXp2()
+XXp2(): started
+XXp2(): arg = 'XXp2'
+XXp2(): terminating!
+XXp1(): fork() rc=5
+-------Process init-------
+	 PID:	1
+	 priority:	6
+	 state ():	0
+	 numChild ():	2
+-----------------------
+-------Process sentinel-------
+	 PID:	2
+	 parentPID:	1
+	 priority:	7
+	 state ():	0
+	 numChild ():	0
+-----------------------
+-------Process testcase_main-------
+	 PID:	3
+	 parentPID:	1
+	 priority:	3
+	 state ():	0
+	 numChild ():	1
+-----------------------
+-------Process XXp1-------
+	 PID:	4
+	 parentPID:	3
+	 priority:	2
+	 state ():	0
+	 numChild ():	1
+-----------------------
+-------Process XXp2-------
+	 PID:	5
+	 parentPID:	4
+	 priority:	1
+	 state ():	2
+	 numChild ():	0
+-----------------------
+XXp1(): This process will terminate.  This should cause an error check in quit() to fire, report an error, and kill the simulation.
+ERROR: still had children
+TESTCASE ENDED: Call counts:   check_io() 0   clockHandler() 0

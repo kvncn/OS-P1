@@ -2,4 +2,55 @@ phase2_start_service_processes() called -- currently a NOP
 phase3_start_service_processes() called -- currently a NOP
 phase4_start_service_processes() called -- currently a NOP
 phase5_start_service_processes() called -- currently a NOP
-NO CHILDRENTESTCASE ENDED: Call counts:   check_io() 0   clockHandler() 0
+testcase_main(): started
+EXPECTATION: Create XXp1 (moderate priority); that creates 2 XXp2 children (low priority).  XXp1 will block on join(), which will cause main() to wake up and report the fork() results - after which the XXp2 processes will run.
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started
+XXp1(): arg = 'XXp1'
+XXp1(): executing fork of first child
+XXp1(): fork1 of first child returned pid = 5
+XXp1(): executing fork of second child
+XXp1(): fork1 of second child returned pid = 6
+XXp1(): performing first join
+Phase 1B TEMPORARY HACK: Manually switching to testcase_main(), since XXp1 has created its two children, which are lower priority than 
+-------Process init-------
+	 PID:	1
+	 priority:	6
+	 state ():	0
+	 numChild ():	2
+-----------------------
+-------Process sentinel-------
+	 PID:	2
+	 parentPID:	1
+	 priority:	7
+	 state ():	0
+	 numChild ():	0
+-----------------------
+-------Process testcase_main-------
+	 PID:	3
+	 parentPID:	1
+	 priority:	3
+	 state ():	0
+	 numChild ():	1
+-----------------------
+-------Process XXp1-------
+	 PID:	4
+	 parentPID:	3
+	 priority:	2
+	 state ():	0
+	 numChild ():	2
+-----------------------
+-------Process XXp2-------
+	 PID:	5
+	 parentPID:	4
+	 priority:	5
+	 state ():	0
+	 numChild ():	0
+-----------------------
+-------Process XXp2-------
+	 PID:	6
+	 parentPID:	4
+	 priority:	5
+	 state ():	0
+	 numChild ():	0
+-----------------------

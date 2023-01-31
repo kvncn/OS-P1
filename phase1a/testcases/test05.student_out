@@ -2,4 +2,11 @@ phase2_start_service_processes() called -- currently a NOP
 phase3_start_service_processes() called -- currently a NOP
 phase4_start_service_processes() called -- currently a NOP
 phase5_start_service_processes() called -- currently a NOP
-NO CHILDRENTESTCASE ENDED: Call counts:   check_io() 0   clockHandler() 0
+testcase_main(): started
+EXPECTATION: Create XXp1, which will create its own child, XXp2.  Each parent will join() with its child.  And the children will always be higher priority than the parent (in this testcase).
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started
+XXp1(): arg = 'XXp1'
+Phase 1B TEMPORARY HACK: Manually switching to XXp2()
+XXp2(): started
+XXp2(): arg = 'XXp2'

@@ -2,4 +2,150 @@ phase2_start_service_processes() called -- currently a NOP
 phase3_start_service_processes() called -- currently a NOP
 phase4_start_service_processes() called -- currently a NOP
 phase5_start_service_processes() called -- currently a NOP
-NO CHILDRENTESTCASE ENDED: Call counts:   check_io() 0   clockHandler() 0
+testcase_main(): started
+EXPECTATION: main() creates many XXp1 children, and join()s all of them; then repeats twice.  Process count is large enough to fill process table - meaning that students must free old process table entries.
+
+*** Start of round 0 of the fork()/join() operations ***
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 3597
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+phase2_start_service_processes() called -- currently a NOP
+phase3_start_service_processes() called -- currently a NOP
+phase4_start_service_processes() called -- currently a NOP
+phase5_start_service_processes() called -- currently a NOP
+testcase_main(): started
+EXPECTATION: main() creates many XXp1 children, and join()s all of them; then repeats twice.  Process count is large enough to fill process table - meaning that students must free old process table entries.
+
+*** Start of round 0 of the fork()/join() operations ***
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 3597
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+phase2_start_service_processes() called -- currently a NOP
+phase3_start_service_processes() called -- currently a NOP
+phase4_start_service_processes() called -- currently a NOP
+phase5_start_service_processes() called -- currently a NOP
+testcase_main(): started
+EXPECTATION: main() creates many XXp1 children, and join()s all of them; then repeats twice.  Process count is large enough to fill process table - meaning that students must free old process table entries.
+
+*** Start of round 0 of the fork()/join() operations ***
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 3597
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+phase2_start_service_processes() called -- currently a NOP
+phase3_start_service_processes() called -- currently a NOP
+phase4_start_service_processes() called -- currently a NOP
+phase5_start_service_processes() called -- currently a NOP
+testcase_main(): started
+EXPECTATION: main() creates many XXp1 children, and join()s all of them; then repeats twice.  Process count is large enough to fill process table - meaning that students must free old process table entries.
+
+*** Start of round 0 of the fork()/join() operations ***
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 3597
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+phase2_start_service_processes() called -- currently a NOP
+phase3_start_service_processes() called -- currently a NOP
+phase4_start_service_processes() called -- currently a NOP
+phase5_start_service_processes() called -- currently a NOP
+testcase_main(): started
+EXPECTATION: main() creates many XXp1 children, and join()s all of them; then repeats twice.  Process count is large enough to fill process table - meaning that students must free old process table entries.
+
+*** Start of round 0 of the fork()/join() operations ***
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 3597
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+phase2_start_service_processes() called -- currently a NOP
+phase3_start_service_processes() called -- currently a NOP
+phase4_start_service_processes() called -- currently a NOP
+phase5_start_service_processes() called -- currently a NOP
+testcase_main(): started
+EXPECTATION: main() creates many XXp1 children, and join()s all of them; then repeats twice.  Process count is large enough to fill process table - meaning that students must free old process table entries.
+
+*** Start of round 0 of the fork()/join() operations ***
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 3597
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+phase2_start_service_processes() called -- currently a NOP
+phase3_start_service_processes() called -- currently a NOP
+phase4_start_service_processes() called -- currently a NOP
+phase5_start_service_processes() called -- currently a NOP
+testcase_main(): started
+EXPECTATION: main() creates many XXp1 children, and join()s all of them; then repeats twice.  Process count is large enough to fill process table - meaning that students must free old process table entries.
+
+*** Start of round 0 of the fork()/join() operations ***
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 3597
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+phase2_start_service_processes() called -- currently a NOP
+phase3_start_service_processes() called -- currently a NOP
+phase4_start_service_processes() called -- currently a NOP
+phase5_start_service_processes() called -- currently a NOP
+testcase_main(): started
+EXPECTATION: main() creates many XXp1 children, and join()s all of them; then repeats twice.  Process count is large enough to fill process table - meaning that students must free old process table entries.
+
+*** Start of round 0 of the fork()/join() operations ***
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 3597
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+phase2_start_service_processes() called -- currently a NOP
+phase3_start_service_processes() called -- currently a NOP
+phase4_start_service_processes() called -- currently a NOP
+phase5_start_service_processes() called -- currently a NOP
+testcase_main(): started
+EXPECTATION: main() creates many XXp1 children, and join()s all of them; then repeats twice.  Process count is large enough to fill process table - meaning that students must free old process table entries.
+
+*** Start of round 0 of the fork()/join() operations ***
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 3597
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+phase2_start_service_processes() called -- currently a NOP
+phase3_start_service_processes() called -- currently a NOP
+phase4_start_service_processes() called -- currently a NOP
+phase5_start_service_processes() called -- currently a NOP
+testcase_main(): started
+EXPECTATION: main() creates many XXp1 children, and join()s all of them; then repeats twice.  Process count is large enough to fill process table - meaning that students must free old process table entries.
+
+*** Start of round 0 of the fork()/join() operations ***
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 3597
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+phase2_start_service_processes() called -- currently a NOP
+phase3_start_service_processes() called -- currently a NOP
+phase4_start_service_processes() called -- currently a NOP
+phase5_start_service_processes() called -- currently a NOP
+testcase_main(): started
+EXPECTATION: main() creates many XXp1 children, and join()s all of them; then repeats twice.  Process count is large enough to fill process table - meaning that students must free old process table entries.
+
+*** Start of round 0 of the fork()/join() operations ***
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 3597
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+phase2_start_service_processes() called -- currently a NOP
+phase3_start_service_processes() called -- currently a NOP
+phase4_start_service_processes() called -- currently a NOP
+phase5_start_service_processes() called -- currently a NOP
+testcase_main(): started
+EXPECTATION: main() creates many XXp1 children, and join()s all of them; then repeats twice.  Process count is large enough to fill process table - meaning that students must free old process table entries.
+
+*** Start of round 0 of the fork()/join() operations ***
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started, pid = 3597
+XXp1(): arg = 'XXp1'
+XXp1(): this process will terminate immediately.
+phase2_start_service_processes() called -- currently a NOP
+phase3_start_service_processes() called -- currently a NOP
+phase4_start_service_processes() called -- currently a NOP
+phase5_start_service_processes() called -- currently a NOP
+testcase_main(): after fork of child 4 -- you will see this after the just-created child runs, and completes.  So expect an alternation of XXp1() output, followed by these fork messages.
+ERROR: testcase_main(): fork() failed!!!  rc=-1
+TESTCASE ENDED: Call counts:   check_io() 0   clockHandler() 0

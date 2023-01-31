@@ -2,4 +2,8 @@ phase2_start_service_processes() called -- currently a NOP
 phase3_start_service_processes() called -- currently a NOP
 phase4_start_service_processes() called -- currently a NOP
 phase5_start_service_processes() called -- currently a NOP
-NO CHILDRENTESTCASE ENDED: Call counts:   check_io() 0   clockHandler() 0
+testcase_main(): started
+EXPECTATION: XXp1 should run promptly, as it is high priority; XXp2 should run only *after* we have started the second join(), because it is low priority.
+Phase 1B TEMPORARY HACK: Manually switching to the first XXp1()
+XXp1(): started
+XXp1(): arg = 'XXp1'

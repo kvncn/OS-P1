@@ -2,4 +2,13 @@ phase2_start_service_processes() called -- currently a NOP
 phase3_start_service_processes() called -- currently a NOP
 phase4_start_service_processes() called -- currently a NOP
 phase5_start_service_processes() called -- currently a NOP
-NO CHILDRENTESTCASE ENDED: Call counts:   check_io() 0   clockHandler() 0
+testcase_main(): started
+EXPECTATION: main creates XXp1; XXp1 creates a pair of XXp2 procs; join() each parent with all its children.  (children are always higher priority than parents, in this testcase)
+Phase 1B TEMPORARY HACK: Manually switching to XXp1()
+XXp1(): started
+XXp1(): arg = 'XXp1'
+XXp1(): executing fork of first child
+Phase 1B TEMPORARY HACK: Manually switching to the first XXp2()
+XXp2(): started
+XXp2(): arg = 'XXp2'
+XXp2(): This XXp2() process will now quit().

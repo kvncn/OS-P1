@@ -2,4 +2,11 @@ phase2_start_service_processes() called -- currently a NOP
 phase3_start_service_processes() called -- currently a NOP
 phase4_start_service_processes() called -- currently a NOP
 phase5_start_service_processes() called -- currently a NOP
-NO CHILDRENTESTCASE ENDED: Call counts:   check_io() 0   clockHandler() 0
+testcase_main(): started
+EXPECTATION: testcase_main() creates a child XXp2().  That process will try (many times) to create a child XXp1() with a too-small stack space.  Each call should fail.
+fork creating a child -- it will run next
+Phase 1B TEMPORARY HACK: Manually switching to XXp2()
+-2 returned, which is correct!
+-2 returned, which is correct!
+-2 returned, which is correct!
+-2 returned, which is correct!
