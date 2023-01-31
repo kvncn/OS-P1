@@ -177,6 +177,17 @@ int fork1(char *name, int(*func)(char *), char *arg, int stacksize, int priority
     ProcessTable[slot].slot = slot;
 
     pidIncrementer++;
+    CurrProcess->numChildren++;
+    if (CurrProcess->firstChild == NULL) {
+        CurrProcess->firstChild = &ProcessTable[slot];
+    } else {
+        Process* cur = CurrProcess->firstChild;
+
+        while (cur->firstSibling != NULL) {
+            cur = cur->firstSibling;
+        }
+        cur->firstSibling = &ProcessTable[slot];
+    }
 
     USLOSS_ContextInit(&ProcessTable[slot].context, ProcessTable[slot].stack, 
                        ProcessTable[slot].stSize, NULL, &trampoline);
