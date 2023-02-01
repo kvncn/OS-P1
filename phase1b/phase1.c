@@ -33,6 +33,7 @@
 
 // ---- typedefs
 typedef struct Process Process;
+typedef struct Queue Queue;
 
 // ----- Structs
 
@@ -64,18 +65,38 @@ struct Process {
     USLOSS_Context context;     // USLOSS context for the init and switches
 };
 
+/**
+ * Struct for a Queue, specifically for the priority queues
+ * for time sharing.
+ */
+struct Queue {
+    Process* first;
+    Process* last;
+    int size; 
+    int type; 
+};
+
 // ----- Function Prototypes
 // phase1 funcs
 void phase1_init(void);
 void startProcesses(void);
 int fork1(char *name, int(*func)(char *), char *arg, int stacksize, int priority);
 int join(int *status);
-void quit(int status, int switchToPid);
+void quit(int status);
+void zap(int pid);
+int isZapped(void);
 void dumpProcesses(void);
 int getpid(void);
+void blockMe(int block_status);
+int  unblockProc(int pid);
+int  readCurStartTime(void);
+void timeSlice(void);
+int  readtime(void);
+static void clockHandler(int dev, void *arg)
+int  currentTime(void);
 
-// phase 1a
-void TEMP_switchTo(int newpid);
+// DISPATCHER
+void dispatcher(void);
 
 // helpers
 void kernelCheck(char* proc);
@@ -95,6 +116,7 @@ Process ProcessTable[MAXPROC]; // actual Process Table
 Process* CurrProcess;          // current process/running process
 int pidIncrementer;            // takes care of the pid
 int procCount;                 // how many process currently in the table
+Qeue runQueue[LOW_PRIORITY];   // the run queues for the specific priorities
 
 /**
  * Bootstarp for the process table and the init process, only populates 
@@ -301,10 +323,8 @@ int join(int *status) {
  * 
  * @param status, integer representing exit status of the process after we 
  * kill it
- * @param switchToPid, integer representing the pid of the next process to 
- * run since we don't yet have a dispatcher
  */
-void quit(int status, int switchToPid) {
+void quit(int status) {
     kernelCheck("quit");
 
     // never returns, goes inside other funcs, so 
@@ -335,6 +355,36 @@ void quit(int status, int switchToPid) {
     }
     CurrProcess->state = RUNNING;
     USLOSS_ContextSwitch(NULL, &CurrProcess->context);
+}
+
+/**
+ * We terminate the process based on the passed PID, it doesn't unblock 
+ * the process, and the zap can be pending and performed later. So it isn't
+ * exactly terminating the process as much as requesting it to be terminated.
+ * 
+ * @param pic, integer representing the process id of the process we want
+ * to zap
+ */
+void zap(int pid) {
+    kernelCheck("zap");
+    disableInterrupts();
+
+    restoreInterrupts();
+
+}
+
+/**
+ * Checks to see if the current process has been zapped by another
+ * process. 
+ * 
+ * @return integer representing whether or not the process has been zapped
+ */
+int isZapped() {
+    kernelCheck("isZapped");
+    disableInterrupts();
+
+    restoreInterrupts();
+    return 0;
 }
 
 /**
@@ -375,24 +425,135 @@ int getpid() {
     restoreInterrupts();
 }
 
-// ----- Phase 1a
+/**
+ * This function is used to block the current process and the reason for the
+ * blockage is passed so that the process can communicate that later on.
+ * 
+ * @param block_status, integer representing the new reason for blocking the 
+ * current process
+ */
+void blockMe(int block_status) {
+    kernelCheck("blockMe");
+    disableInterrupts();
+
+    restoreInterrupts();
+
+}
 
 /**
- * This function works as a manual, brute dispatcher to switch between processes
- * since priorities are not implemented yet and the testcode does the switch
- * for us.
+ * Function to unblock the passed process (passed as in the id), the process is
+ * then placed back on the run queue. The dispatcher is called before the 
+ * return to account for a greater priority process being awakened.
+ * 
+ * @param pid, integer representing the process to unblock
+ * @return integer representing the result of the operation, 0 if successfulm 
+ * -2 otherwise
  */
-void TEMP_switchTo(int newpid) {
-    Process* oldProc = CurrProcess;
-    for (int i = 0; i < MAXPROC; i++) {
-        if (ProcessTable[i].PID == newpid) {
-            CurrProcess = &ProcessTable[i];
-            break;
-        }
+int unblockProc(int pid) {
+    kernelCheck("blockMe");
+    disableInterrupts();
+    dispatcher();
+    restoreInterrupts();
+    return 0;
+}
+
+/**
+ * This function returns the current process' start time (wall-clock time),
+ * when it started its time slice.
+ * 
+ * @return integer representing the start time of the current process
+ */
+int readCurStartTime() {
+    kernelCheck("readCurStartTime");
+    return -1;
+}
+
+/**
+ * This function compares the current time and the start time and calls the
+ * dispatcher if necessary (ie, process ran for too long). 
+ */
+void timeSlice() {
+    kernelCheck("timeSlice");
+    disableInterrupts();
+
+    if (1) {
+        dispatcher();
+    } else {
+        restoreInterrupts();
     }
-    oldProc->state = RUNNABLE;
-    CurrProcess->state = RUNNING;
-    USLOSS_ContextSwitch(&oldProc->context, &CurrProcess->context);
+
+}
+
+/**
+ * This function returns the total time (not only of the current time slice), 
+ * consumed by a process. 
+ * 
+ * @return integer representing the total time the current process has ran
+ */
+int readtime() {
+    kernelCheck("readtime");
+    return -1;
+}
+
+/**
+ * Interrupt handler for the USLOSS CLOCK device, it takes in the device 
+ * and arguments and calls the phase2 clock handler and checks if the
+ * dispatcher also needs to be called depending on the timeslice. Taken
+ * from Russ' spec.
+ * 
+ * @param dev, integer representing USLOSS device 
+ * @param arg, void pointer representing the arguments in the process
+ */
+static void clockHandler(int dev, void *arg) {
+    kernelCheck("clockHandler");
+    if (0) {
+        USLOSS_Console("clockHandler(): PSR = %d\n", USLOSS_PsrGet());
+        USLOSS_Console("clockHandler(): currentTime = %d\n", currentTime());
+    }
+    /* make sure to call this first, before timeSlice(), since we want to do
+    * the Phase 2 related work even if process(es) are chewing up lots of
+    * CPU.
+    */
+    phase2_clockHandler();
+
+    // call the dispatcher if the time slice has expired
+    timeSlice();
+
+    /* when we return from the handler, USLOSS automatically re-enables
+    * interrupts and disables kernel mode (unless we were previously in
+    * kernel code). Or I think so. I haven’t double-checked yet. TODO
+    */
+}
+
+/**
+ * Function to read the wall-clock time from USLOSS and return it as an
+ * int. Used what Russ provided in the spec. 
+ * 
+ * @return retval, integer representing current clock time
+ */
+int currentTime() {
+    kernelCheck("currentTime");
+    int retval;
+
+    int usloss_rc = USLOSS_DeviceInput(USLOSS_CLOCK_DEV, 0, &retval);
+    assert(usloss_rc == USLOSS_DEV_OK);
+
+    return retval;
+}
+
+
+// ---- DISPATCHER
+
+/**
+ * Dispatcher for the kernel, decides when and how to make context switches, 
+ * so that priorities and time sharing are respected. 
+ */
+void dispatcher() {
+    kernelCheck("dispatcher");
+    disableInterrupts();
+
+    restoreInterrupts();
+
 }
 
 // ----- Special Processes
@@ -535,7 +696,7 @@ void trampoline() {
     USLOSS_Halt(2);
 
     // exit the current process
-    quit(res, CurrProcess->parent->PID);
+    quit(res);
 }
 
 /**
