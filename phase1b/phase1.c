@@ -4,7 +4,6 @@
  * INSTRUCTOR: Russell Lewis
  * ASSIGNMENT: Phase1b
  * DUE_DATE:   02/09/2023
- * Testing this shit now
  * 
  * This project implements context management in a simulation of an operating
  * system kernel. It handles the Process Table, process creation, quitting, 
@@ -16,6 +15,7 @@
 #include <phase1.h> 
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 // ----- Constants
 #define LOW_PRIORITY 7   
@@ -62,6 +62,8 @@ struct Process {
     Process* firstSibling;      // first sibling, linked list
     int numChildren;            // number of children that spanned from this
 
+    Process* runNext;           // next pointer for the run queue
+
     USLOSS_Context context;     // USLOSS context for the init and switches
 };
 
@@ -73,7 +75,6 @@ struct Queue {
     Process* first;
     Process* last;
     int size; 
-    int type; 
 };
 
 // ----- Function Prototypes
@@ -92,7 +93,7 @@ int  unblockProc(int pid);
 int  readCurStartTime(void);
 void timeSlice(void);
 int  readtime(void);
-static void clockHandler(int dev, void *arg)
+static void clockHandler(int dev, void *arg);
 int  currentTime(void);
 
 // DISPATCHER
@@ -105,6 +106,7 @@ void disableInterrupts();
 void restoreInterrupts();
 void cleanEntry(int idx);
 int slotFinder();
+void addToQueue (Process* proc);
 
 // processes
 int init(char* usloss);
@@ -116,7 +118,7 @@ Process ProcessTable[MAXPROC]; // actual Process Table
 Process* CurrProcess;          // current process/running process
 int pidIncrementer;            // takes care of the pid
 int procCount;                 // how many process currently in the table
-Qeue runQueue[LOW_PRIORITY];   // the run queues for the specific priorities
+Queue runQueue[LOW_PRIORITY];   // the run queues for the specific priorities
 
 /**
  * Bootstarp for the process table and the init process, only populates 
@@ -129,6 +131,13 @@ void phase1_init(void) {
     // initializing the process table (global data structure)
     for (int i = 0; i < MAXPROC; i++) {
         cleanEntry(i); 
+    }
+
+    // initialize the runQueues for each priority
+    for (int i = 0; i < LOW_PRIORITY; i++) {
+        runQueue[i].first = NULL;
+        runQueue[i].last = NULL;
+        runQueue[i].size = 0;
     }
 
     // set currProcess to the init, switch to it, start at init's pid
@@ -155,6 +164,9 @@ void phase1_init(void) {
     CurrProcess = &ProcessTable[slot];
 
     pidIncrementer++;
+
+    // add init to the runQueue
+    addToQueue(CurrProcess);
 
     startProcesses();
 }
@@ -249,6 +261,9 @@ int fork1(char *name, int(*func)(char *), char *arg, int stacksize, int priority
     // initialize the context and then restore interrupts
     USLOSS_ContextInit(&ProcessTable[slot].context, ProcessTable[slot].stack, 
                        ProcessTable[slot].stSize, NULL, &trampoline);
+    
+    // add process to run queue
+    addToQueue(&ProcessTable[slot]);
 
     restoreInterrupts();
 
@@ -370,7 +385,6 @@ void zap(int pid) {
     disableInterrupts();
 
     restoreInterrupts();
-
 }
 
 /**
@@ -600,6 +614,8 @@ int init(char* usloss) {
                        ProcessTable[slot].stSize, NULL, &trampoline);
     
     pidIncrementer++;
+
+    addToQueue(&ProcessTable[slot]);
     
     USLOSS_Console("Phase 1B TEMPORARY HACK: init() manually switching to testcase_main() after using fork1() to create it.\n");
 
@@ -762,4 +778,21 @@ int slotFinder() {
 
 	// PID updated
 	return pidIncrementer % MAXPROC;
+}
+
+/**
+ * Adds a process to its specific runQueue.
+ * 
+ * @param proc, Process pointer for the process to add to the queue
+ */
+void addToQueue(Process* proc) {
+    int slot = proc->priority - 1;
+    if (runQueue[slot].first == NULL) {
+        runQueue[slot].first = proc;
+    } else {
+        runQueue[slot].tail->runNext = proc;
+    }
+
+     runQueue[slot].tail = proc;
+     runQueue[slot].size++;
 }
