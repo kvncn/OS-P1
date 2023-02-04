@@ -787,12 +787,16 @@ int slotFinder() {
  */
 void addToQueue(Process* proc) {
     int slot = proc->priority - 1;
+
+    // if the queue is empty, just make it the head, otherwise, we add it 
+    // to the end (last)
     if (runQueue[slot].first == NULL) {
         runQueue[slot].first = proc;
     } else {
-        runQueue[slot].tail->runNext = proc;
+        runQueue[slot].last->runNext = proc;
     }
 
-     runQueue[slot].tail = proc;
+    // have to make it the tail anyways, since it is newly added
+     runQueue[slot].last = proc;
      runQueue[slot].size++;
 }
