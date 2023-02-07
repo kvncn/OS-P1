@@ -64,6 +64,10 @@ struct Process {
 
     Process* runNext;           // next pointer for the run queue
 
+    int zappers;                // number of processes wanting to zap this
+    Process* zappersHead;
+    Process* zappersNext;
+
     USLOSS_Context context;     // USLOSS context for the init and switches
 };
 
@@ -265,6 +269,8 @@ int fork1(char *name, int(*func)(char *), char *arg, int stacksize, int priority
     // add process to run queue
     addToQueue(&ProcessTable[slot]);
 
+    dispatcher();
+
     restoreInterrupts();
 
     return ProcessTable[slot].PID;
@@ -287,8 +293,13 @@ int join(int *status) {
     disableInterrupts();
 
     // check if we have any children
-    if (CurrProcess->numChildren == 0) {
+    if (CurrProcess->numChildren == 0 && CurrProcess->joinWait == 0) {
         return -2;
+    }
+
+    // ??
+    if (CurrProcess->joinWait == 0) {
+        blockProccess(BLOCKED_JOIN);
     }
 
     // remove dead child
@@ -320,10 +331,14 @@ int join(int *status) {
     // clean up the dead children after reading its exit status
     CurrProcess->numChildren--;
 
+    CurrProcess->joinWait--;
+
     *status = removed->exitState;
 
     int res = removed->PID;
     int slot = removed->slot;
+
+    procCount--;
 
     cleanEntry(slot);
 
@@ -347,7 +362,7 @@ void quit(int status) {
     disableInterrupts();
 
     // if parent dies before all children, halt sim
-    if (CurrProcess->numChildren > 0) {
+    if (CurrProcess->numChildren > 0 || CurrProcess->joinWait > 1) {
         USLOSS_Console("ERROR: Process pid %d called quit() while it still had children.\n", CurrProcess->PID);
         USLOSS_Halt(3);
     }
@@ -356,20 +371,32 @@ void quit(int status) {
     CurrProcess->state = DEAD;
     CurrProcess->exitState = status;
 
-    // since we quit, decrease count
-    procCount--;
-    
-    // quit doesn't care about saving prev context, so we just 
-    // get the next PID from the param, and call a context switch
-    for (int i = 0; i < MAXPROC; i++) {
-        // found PID in table, we are assuming it exists
-        if (ProcessTable[i].PID == switchToPid) {
-            CurrProcess = &ProcessTable[i];
-            break;
+    // ?? remove it from runQueue
+
+    // if there is no parent to notify, just don't
+    if (CurrProcess->parent == NULL) {
+        cleanEntry(CurrProcess->slot);
+        procCount--;
+    } else {
+        CurrProcess->joinWait++;
+        // if our parent was blocked waiting, notify it and make it runnable
+        // again
+        if (CurrProcess->parent->state == BLOCKED_JOIN) {
+            CurrProcess->parent->state = RUNNABLE;
+            addToQueue(CurrProcess->parent);
         }
     }
-    CurrProcess->state = RUNNING;
-    USLOSS_ContextSwitch(NULL, &CurrProcess->context);
+
+    if (isZapped()) {
+        while (CurrProcess->zappersHead != NULL) {
+            Process* fromZap = NULL; // ?? implement removal
+            fromZap->state = RUNNABLE; 
+            addToQueue(fromZap);
+        }
+    }
+
+    CurrProcess = NULL;
+    dispatcher();
 }
 
 /**
@@ -384,6 +411,34 @@ void zap(int pid) {
     kernelCheck("zap");
     disableInterrupts();
 
+    if (pid <= 0) {
+        USLOSS_Console("ERROR: Attempt to zap() a PID which is <=0.  other_pid = %d\n", pid);
+		USLOSS_Halt(1);
+    }
+    if (pid == 1) {
+		USLOSS_Console("ERROR: Attempt to zap() init.\n");
+		USLOSS_Halt(1);
+	}
+	if (pid == currentProcess->pid) {
+		USLOSS_Console("ERROR: Attempt to zap() itself.\n");
+		USLOSS_Halt(1);
+	}
+
+    Process* toZap = &ProcessTable[pid % MAXPROC];
+
+    if (toZap->state == DEAD) {
+        USLOSS_Console("ERROR: Attempt to zap() a process that is already in the process of dying.\n");
+		USLOSS_Halt(1);
+    }
+
+    if (toZap->state == FREE || toZap->PID != pid) {
+        USLOSS_Console("ERROR: Attempt to zap() a non-existent process.\n");
+		USLOSS_Halt(1);
+    }
+
+
+
+
     restoreInterrupts();
 }
 
@@ -396,6 +451,8 @@ void zap(int pid) {
 int isZapped() {
     kernelCheck("isZapped");
     disableInterrupts();
+
+    if (CurrProcess->zappers > 0) return 1;
 
     restoreInterrupts();
     return 0;
