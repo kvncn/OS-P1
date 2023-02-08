@@ -29,6 +29,7 @@
 #define RUNNING 1       // means the process is currently running
 #define DEAD 2          // means the process quit
 #define BLOCKED_JOIN 3  // means the process was blocked in a join
+#define BLOCKED_ZAP 4   // means the process was blocked in a zap
 #define FREE 9          // means the slot is free
 
 // ---- typedefs
@@ -117,6 +118,7 @@ void addToQueue (Process* proc);
 void removeFromQueue(Process* proc);
 void addZapper(Process* proc);
 Process* removeZapper();
+void blockProcess(int code);
 
 // processes
 int init(char* usloss);
@@ -306,7 +308,7 @@ int join(int *status) {
 
     // ??
     if (CurrProcess->joinWait == 0) {
-        blockProccess(BLOCKED_JOIN);
+        blockProcess(BLOCKED_JOIN);
     }
 
     // remove dead child
@@ -378,7 +380,7 @@ void quit(int status) {
     CurrProcess->state = DEAD;
     CurrProcess->exitState = status;
 
-    // ?? remove it from runQueue
+    removeFromQueue(CurrProcess);
 
     // if there is no parent to notify, just don't
     if (CurrProcess->parent == NULL) {
@@ -396,7 +398,7 @@ void quit(int status) {
 
     if (isZapped()) {
         while (CurrProcess->zappersHead != NULL) {
-            Process* fromZap = NULL; // ?? implement removal
+            Process* fromZap = removeZapper; // ?? implement removal
             fromZap->state = RUNNABLE; 
             addToQueue(fromZap);
         }
@@ -443,8 +445,8 @@ void zap(int pid) {
 		USLOSS_Halt(1);
     }
 
-
-
+    addZapper(toZap);
+    blockProcess(BLOCKED_ZAP);
 
     restoreInterrupts();
 }
@@ -514,7 +516,14 @@ void blockMe(int block_status) {
     kernelCheck("blockMe");
     disableInterrupts();
 
+    if (block_status < 10) {
+        USLOSS_Console("blockMe status has to be greater than 10, instead got %d\n", block_status);
+		USLOSS_Halt(1);
+    }
+
     restoreInterrupts();
+
+    return blockProcess(block_status);
 
 }
 
@@ -530,6 +539,21 @@ void blockMe(int block_status) {
 int unblockProc(int pid) {
     kernelCheck("blockMe");
     disableInterrupts();
+
+    Process* toUnblock = &ProcessTable[pid % MAXPROC];
+
+    // process to unblock is non existent
+    if (toUnblock->state == 0 || toUnblock->PID != pid) {
+        return -2;
+    } else if (toUnblock->state <= 10) {
+        return -2;
+    }
+
+    // to unblock it, simply add it back to runQueue
+    addToQueue(toUnblock)
+    // make it runnable 
+    toUnblock->state = RUNNABLE;
+    
     dispatcher();
     restoreInterrupts();
     return 0;
@@ -942,4 +966,16 @@ Process* removeZapper() {
     CurrProcess->zappers--; 
 
     return result;
+}
+
+/**
+ * Blocks current process with the given code. 
+ * 
+ * @param code, blocking code so we know the process'
+ * status
+ * 
+ * @return int, 0 if block was successful
+ */
+void blockProcess(int code) {
+
 }
