@@ -553,7 +553,7 @@ int unblockProc(int pid) {
     addToQueue(toUnblock)
     // make it runnable 
     toUnblock->state = RUNNABLE;
-    
+
     dispatcher();
     restoreInterrupts();
     return 0;
@@ -977,5 +977,12 @@ Process* removeZapper() {
  * @return int, 0 if block was successful
  */
 void blockProcess(int code) {
+    CurrProcess->state = code;
 
+    // remove from runQueue to block
+    removeFromQueue(CurrProcess);
+
+    dispatcher();
+    
+    return 0;
 }
