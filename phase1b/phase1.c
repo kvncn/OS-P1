@@ -275,6 +275,8 @@ int fork1(char *name, int(*func)(char *), char *arg, int stacksize, int priority
     USLOSS_ContextInit(&ProcessTable[slot].context, ProcessTable[slot].stack, 
                        ProcessTable[slot].stSize, NULL, &trampoline);
     
+    mmu_init_proc(ProcessTable[slot].PID);
+
     // add process to run queue
     addToQueue(&ProcessTable[slot], 'r');
 
@@ -403,7 +405,7 @@ void quit(int status) {
             addToQueue(fromZap);
         }
     }
-
+    mmu_quit(CurrProcess->PID);
     CurrProcess = NULL;
     dispatcher();
 }
@@ -983,6 +985,6 @@ void blockProcess(int code) {
     removeFromQueue(CurrProcess);
 
     dispatcher();
-    
+
     return 0;
 }
