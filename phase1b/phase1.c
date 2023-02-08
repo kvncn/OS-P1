@@ -65,8 +65,8 @@ struct Process {
     Process* runNext;           // next pointer for the run queue
 
     int zappers;                // number of processes wanting to zap this
-    Process* zappersHead;
-    Process* zappersNext;
+    Process* zappersHead;       // first zapper
+    Process* zappersNext;       // subsequent zappers
 
     USLOSS_Context context;     // USLOSS context for the init and switches
 
@@ -115,6 +115,8 @@ void cleanEntry(int idx);
 int slotFinder();
 void addToQueue (Process* proc);
 void removeFromQueue(Process* proc);
+void addZapper(Process* proc);
+Process* removeZapper();
 
 // processes
 int init(char* usloss);
@@ -811,7 +813,12 @@ void cleanEntry(int idx) {
     ProcessTable[idx].firstSibling = NULL;
     ProcessTable[idx].exitState = 0;
     ProcessTable[idx].slot = 0;
-    ProcessTable[idx].joinWait = 0;
+    ProcessTable[idx].zappers = 0;
+    ProcessTable[idx].zappersHead = NULL;
+    ProcessTable[idx].zappersNext = NULL;
+    ProcessTable[idx].start = 0;
+    ProcessTable[idx].totalRuntime = 0;
+    ProcessTable[idx].runNext = NULL;
 }
 
 /**
@@ -846,7 +853,6 @@ int slotFinder() {
  * Adds a process to its specific runQueue.
  * 
  * @param proc, Process pointer for the process to add to the queue
- * @param type, char representing queue type
  */
 void addToQueue(Process* proc) {
     int slot = proc->priority - 1;
@@ -863,7 +869,77 @@ void addToQueue(Process* proc) {
      runQueue[slot].last = proc;
      runQueue[slot].size++;
 }
-
+/**
+ * Removes a process from its specific runQueue.
+ * 
+ * @param proc, Process pointer for the process to be removed 
+ * from the queue
+ */
 void removeFromQueue(Process* proc) {
+    Queue runQueueEntry = runQueue[proc->priority-1];
+    Process* previous = runQueueEntry.head;
 
+    // if this was the only proc in runQueue
+    if (previous->runNext == NULL) {
+        runQueueEntry.head = NULL;
+        runQueueEntry.tail = NULL; 
+    }
+
+    // if we need to remove the head
+    if (previous == proc) {
+        runQueueEntry.head = previous->runNext;
+
+        // if the head is also the tail
+        if (runQueueEntry.tail == proc) {
+            runQueueEntry.tail == NULL:
+        }
+    } else {
+        while (previous->runNext != proc) {
+			previous = previous->runNext;
+		}
+		previous->runNext = proc->runNext;
+
+		// check for tail 
+		if (runQueueEntry.tail == proc) {
+			runQueueEntry.tail = prev;
+        }
+    }
+    runQueueEntry.size--;
+}
+
+/**
+ * Adds the currProcess' to the proc zappers.
+ * 
+ * @param proc, Process pointer indicating the 
+ * process we want to add the zapper to  
+ */
+void addZapper(Process* proc){
+    proc->zappers++;
+    // since we incremented, this means we actually have
+    // none
+    if (proc->zappers == 1) {
+        proc->zappersHead = CurrProcess;
+        return;
+    }
+
+     // adding to head
+    Process* cur = proc->zappersHead;
+    CurrProcess->zappersNext = cur;
+    proc->zappersHead = CurrProcess;
+}
+
+/**
+ * Removed the first zapper. 
+ * 
+ * @return proc, Process pointer indicating the 
+ * process we removed from Curr's zappers
+ */
+Process* removeZapper() {
+    Process* result = CurrProcess->zappersHead;
+
+    CurrProcess->zappersHead = CurrProcess->zappersHead->zappersNext;
+
+    CurrProcess->zappers--; 
+
+    return result;
 }
