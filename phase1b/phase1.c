@@ -15,6 +15,7 @@
 #include <phase1.h> 
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 // ----- Constants
 #define LOW_PRIORITY 7   
@@ -32,6 +33,7 @@
 
 // ---- typedefs
 typedef struct Process Process;
+typedef struct Queue Queue;
 
 // ----- Structs
 
@@ -60,7 +62,26 @@ struct Process {
     Process* firstSibling;      // first sibling, linked list
     int numChildren;            // number of children that spanned from this
 
+    Process* runNext;           // next pointer for the run queue
+
+    int zappers;                // number of processes wanting to zap this
+    Process* zappersHead;
+    Process* zappersNext;
+
     USLOSS_Context context;     // USLOSS context for the init and switches
+
+    int start;                  // start time of the process
+    int totalRuntime;           // total runtime of the process
+};
+
+/**
+ * Struct for a Queue, specifically for the priority queues
+ * for time sharing.
+ */
+struct Queue {
+    Process* first;
+    Process* last;
+    int size; 
 };
 
 // ----- Function Prototypes
@@ -69,12 +90,21 @@ void phase1_init(void);
 void startProcesses(void);
 int fork1(char *name, int(*func)(char *), char *arg, int stacksize, int priority);
 int join(int *status);
-void quit(int status, int switchToPid);
+void quit(int status);
+void zap(int pid);
+int isZapped(void);
 void dumpProcesses(void);
 int getpid(void);
+void blockMe(int block_status);
+int  unblockProc(int pid);
+int  readCurStartTime(void);
+void timeSlice(void);
+int  readtime(void);
+static void clockHandler(int dev, void *arg);
+int  currentTime(void);
 
-// phase 1a
-void TEMP_switchTo(int newpid);
+// DISPATCHER
+void dispatcher(void);
 
 // helpers
 void kernelCheck(char* proc);
@@ -83,6 +113,8 @@ void disableInterrupts();
 void restoreInterrupts();
 void cleanEntry(int idx);
 int slotFinder();
+void addToQueue (Process* proc);
+void removeFromQueue(Process* proc);
 
 // processes
 int init(char* usloss);
@@ -94,6 +126,7 @@ Process ProcessTable[MAXPROC]; // actual Process Table
 Process* CurrProcess;          // current process/running process
 int pidIncrementer;            // takes care of the pid
 int procCount;                 // how many process currently in the table
+Queue runQueue[LOW_PRIORITY];   // the run queues for the specific priorities
 
 /**
  * Bootstarp for the process table and the init process, only populates 
@@ -106,6 +139,13 @@ void phase1_init(void) {
     // initializing the process table (global data structure)
     for (int i = 0; i < MAXPROC; i++) {
         cleanEntry(i); 
+    }
+
+    // initialize the runQueues for each priority
+    for (int i = 0; i < LOW_PRIORITY; i++) {
+        runQueue[i].first = NULL;
+        runQueue[i].last = NULL;
+        runQueue[i].size = 0;
     }
 
     // set currProcess to the init, switch to it, start at init's pid
@@ -133,16 +173,20 @@ void phase1_init(void) {
 
     pidIncrementer++;
 
+    // add init to the runQueue
+    addToQueue(CurrProcess);
+
     startProcesses();
 }
 
 /**
  * This function starts the running of processes, changes init from runnable to
- * running. Uses one context switch.
+ * running. Calls the dispatcher.
  */
 void startProcesses(void) {
     CurrProcess->state = RUNNING;
-    USLOSS_ContextSwitch(NULL, &CurrProcess->context);
+    //USLOSS_ContextSwitch(NULL, &CurrProcess->context);
+    dispatcher();
 }
 
 /**
@@ -226,6 +270,11 @@ int fork1(char *name, int(*func)(char *), char *arg, int stacksize, int priority
     // initialize the context and then restore interrupts
     USLOSS_ContextInit(&ProcessTable[slot].context, ProcessTable[slot].stack, 
                        ProcessTable[slot].stSize, NULL, &trampoline);
+    
+    // add process to run queue
+    addToQueue(&ProcessTable[slot], 'r');
+
+    dispatcher();
 
     restoreInterrupts();
 
@@ -249,8 +298,13 @@ int join(int *status) {
     disableInterrupts();
 
     // check if we have any children
-    if (CurrProcess->numChildren == 0) {
+    if (CurrProcess->numChildren == 0 && CurrProcess->joinWait == 0) {
         return -2;
+    }
+
+    // ??
+    if (CurrProcess->joinWait == 0) {
+        blockProccess(BLOCKED_JOIN);
     }
 
     // remove dead child
@@ -282,10 +336,14 @@ int join(int *status) {
     // clean up the dead children after reading its exit status
     CurrProcess->numChildren--;
 
+    CurrProcess->joinWait--;
+
     *status = removed->exitState;
 
     int res = removed->PID;
     int slot = removed->slot;
+
+    procCount--;
 
     cleanEntry(slot);
 
@@ -300,10 +358,8 @@ int join(int *status) {
  * 
  * @param status, integer representing exit status of the process after we 
  * kill it
- * @param switchToPid, integer representing the pid of the next process to 
- * run since we don't yet have a dispatcher
  */
-void quit(int status, int switchToPid) {
+void quit(int status) {
     kernelCheck("quit");
 
     // never returns, goes inside other funcs, so 
@@ -311,7 +367,7 @@ void quit(int status, int switchToPid) {
     disableInterrupts();
 
     // if parent dies before all children, halt sim
-    if (CurrProcess->numChildren > 0) {
+    if (CurrProcess->numChildren > 0 || CurrProcess->joinWait > 1) {
         USLOSS_Console("ERROR: Process pid %d called quit() while it still had children.\n", CurrProcess->PID);
         USLOSS_Halt(3);
     }
@@ -320,20 +376,91 @@ void quit(int status, int switchToPid) {
     CurrProcess->state = DEAD;
     CurrProcess->exitState = status;
 
-    // since we quit, decrease count
-    procCount--;
-    
-    // quit doesn't care about saving prev context, so we just 
-    // get the next PID from the param, and call a context switch
-    for (int i = 0; i < MAXPROC; i++) {
-        // found PID in table, we are assuming it exists
-        if (ProcessTable[i].PID == switchToPid) {
-            CurrProcess = &ProcessTable[i];
-            break;
+    // ?? remove it from runQueue
+
+    // if there is no parent to notify, just don't
+    if (CurrProcess->parent == NULL) {
+        cleanEntry(CurrProcess->slot);
+        procCount--;
+    } else {
+        CurrProcess->joinWait++;
+        // if our parent was blocked waiting, notify it and make it runnable
+        // again
+        if (CurrProcess->parent->state == BLOCKED_JOIN) {
+            CurrProcess->parent->state = RUNNABLE;
+            addToQueue(CurrProcess->parent);
         }
     }
-    CurrProcess->state = RUNNING;
-    USLOSS_ContextSwitch(NULL, &CurrProcess->context);
+
+    if (isZapped()) {
+        while (CurrProcess->zappersHead != NULL) {
+            Process* fromZap = NULL; // ?? implement removal
+            fromZap->state = RUNNABLE; 
+            addToQueue(fromZap);
+        }
+    }
+
+    CurrProcess = NULL;
+    dispatcher();
+}
+
+/**
+ * We terminate the process based on the passed PID, it doesn't unblock 
+ * the process, and the zap can be pending and performed later. So it isn't
+ * exactly terminating the process as much as requesting it to be terminated.
+ * 
+ * @param pic, integer representing the process id of the process we want
+ * to zap
+ */
+void zap(int pid) {
+    kernelCheck("zap");
+    disableInterrupts();
+
+    if (pid <= 0) {
+        USLOSS_Console("ERROR: Attempt to zap() a PID which is <=0.  other_pid = %d\n", pid);
+		USLOSS_Halt(1);
+    }
+    if (pid == 1) {
+		USLOSS_Console("ERROR: Attempt to zap() init.\n");
+		USLOSS_Halt(1);
+	}
+	if (pid == currentProcess->pid) {
+		USLOSS_Console("ERROR: Attempt to zap() itself.\n");
+		USLOSS_Halt(1);
+	}
+
+    Process* toZap = &ProcessTable[pid % MAXPROC];
+
+    if (toZap->state == DEAD) {
+        USLOSS_Console("ERROR: Attempt to zap() a process that is already in the process of dying.\n");
+		USLOSS_Halt(1);
+    }
+
+    if (toZap->state == FREE || toZap->PID != pid) {
+        USLOSS_Console("ERROR: Attempt to zap() a non-existent process.\n");
+		USLOSS_Halt(1);
+    }
+
+
+
+
+    restoreInterrupts();
+}
+
+/**
+ * Checks to see if the current process has been zapped by another
+ * process. 
+ * 
+ * @return integer representing whether or not the process has been zapped
+ */
+int isZapped() {
+    kernelCheck("isZapped");
+    disableInterrupts();
+
+    if (CurrProcess->zappers > 0) return 1;
+
+    restoreInterrupts();
+    return 0;
 }
 
 /**
@@ -374,24 +501,135 @@ int getpid() {
     restoreInterrupts();
 }
 
-// ----- Phase 1a
+/**
+ * This function is used to block the current process and the reason for the
+ * blockage is passed so that the process can communicate that later on.
+ * 
+ * @param block_status, integer representing the new reason for blocking the 
+ * current process
+ */
+void blockMe(int block_status) {
+    kernelCheck("blockMe");
+    disableInterrupts();
+
+    restoreInterrupts();
+
+}
 
 /**
- * This function works as a manual, brute dispatcher to switch between processes
- * since priorities are not implemented yet and the testcode does the switch
- * for us.
+ * Function to unblock the passed process (passed as in the id), the process is
+ * then placed back on the run queue. The dispatcher is called before the 
+ * return to account for a greater priority process being awakened.
+ * 
+ * @param pid, integer representing the process to unblock
+ * @return integer representing the result of the operation, 0 if successfulm 
+ * -2 otherwise
  */
-void TEMP_switchTo(int newpid) {
-    Process* oldProc = CurrProcess;
-    for (int i = 0; i < MAXPROC; i++) {
-        if (ProcessTable[i].PID == newpid) {
-            CurrProcess = &ProcessTable[i];
-            break;
-        }
+int unblockProc(int pid) {
+    kernelCheck("blockMe");
+    disableInterrupts();
+    dispatcher();
+    restoreInterrupts();
+    return 0;
+}
+
+/**
+ * This function returns the current process' start time (wall-clock time),
+ * when it started its time slice.
+ * 
+ * @return integer representing the start time of the current process
+ */
+int readCurStartTime() {
+    kernelCheck("readCurStartTime");
+    return CurrProcess->start;
+}
+
+/**
+ * This function compares the current time and the start time and calls the
+ * dispatcher if necessary (ie, process ran for too long). 
+ */
+void timeSlice() {
+    kernelCheck("timeSlice");
+    disableInterrupts();
+
+    if ((currentTime() - CurrProcess->start) >= 80000) {
+        dispatcher();
+    } else {
+        restoreInterrupts();
     }
-    oldProc->state = RUNNABLE;
-    CurrProcess->state = RUNNING;
-    USLOSS_ContextSwitch(&oldProc->context, &CurrProcess->context);
+
+}
+
+/**
+ * This function returns the total time (not only of the current time slice), 
+ * consumed by a process. 
+ * 
+ * @return integer representing the total time the current process has ran
+ */
+int readtime() {
+    kernelCheck("readtime");
+    return CurrProcess->totalRuntime;
+}
+
+/**
+ * Interrupt handler for the USLOSS CLOCK device, it takes in the device 
+ * and arguments and calls the phase2 clock handler and checks if the
+ * dispatcher also needs to be called depending on the timeslice. Taken
+ * from Russ' spec.
+ * 
+ * @param dev, integer representing USLOSS device 
+ * @param arg, void pointer representing the arguments in the process
+ */
+static void clockHandler(int dev, void *arg) {
+    kernelCheck("clockHandler");
+    if (0) {
+        USLOSS_Console("clockHandler(): PSR = %d\n", USLOSS_PsrGet());
+        USLOSS_Console("clockHandler(): currentTime = %d\n", currentTime());
+    }
+    /* make sure to call this first, before timeSlice(), since we want to do
+    * the Phase 2 related work even if process(es) are chewing up lots of
+    * CPU.
+    */
+    phase2_clockHandler();
+
+    // call the dispatcher if the time slice has expired
+    timeSlice();
+
+    /* when we return from the handler, USLOSS automatically re-enables
+    * interrupts and disables kernel mode (unless we were previously in
+    * kernel code). Or I think so. I haven’t double-checked yet. TODO
+    */
+}
+
+/**
+ * Function to read the wall-clock time from USLOSS and return it as an
+ * int. Used what Russ provided in the spec. 
+ * 
+ * @return retval, integer representing current clock time
+ */
+int currentTime() {
+    kernelCheck("currentTime");
+    int retval;
+
+    int usloss_rc = USLOSS_DeviceInput(USLOSS_CLOCK_DEV, 0, &retval);
+    assert(usloss_rc == USLOSS_DEV_OK);
+
+    return retval;
+}
+
+
+// ---- DISPATCHER
+
+/**
+ * Dispatcher for the kernel, decides when and how to make context switches, 
+ * so that priorities and time sharing are respected. 
+ */
+void dispatcher() {
+    kernelCheck("dispatcher");
+    disableInterrupts();
+
+    restoreInterrupts();
+
 }
 
 // ----- Special Processes
@@ -438,6 +676,8 @@ int init(char* usloss) {
                        ProcessTable[slot].stSize, NULL, &trampoline);
     
     pidIncrementer++;
+
+    addToQueue(&ProcessTable[slot]);
     
     USLOSS_Console("Phase 1B TEMPORARY HACK: init() manually switching to testcase_main() after using fork1() to create it.\n");
 
@@ -534,7 +774,7 @@ void trampoline() {
     USLOSS_Halt(2);
 
     // exit the current process
-    quit(res, CurrProcess->parent->PID);
+    quit(res);
 }
 
 /**
@@ -600,4 +840,30 @@ int slotFinder() {
 
 	// PID updated
 	return pidIncrementer % MAXPROC;
+}
+
+/**
+ * Adds a process to its specific runQueue.
+ * 
+ * @param proc, Process pointer for the process to add to the queue
+ * @param type, char representing queue type
+ */
+void addToQueue(Process* proc) {
+    int slot = proc->priority - 1;
+    
+    // if the queue is empty, just make it the head, otherwise, we add it 
+    // to the end (last)
+    if (runQueue[slot].first == NULL) {
+        runQueue[slot].first = proc;
+    } else {
+        runQueue[slot].last->runNext = proc;
+    }
+
+    // have to make it the tail anyways, since it is newly added
+     runQueue[slot].last = proc;
+     runQueue[slot].size++;
+}
+
+void removeFromQueue(Process* proc) {
+
 }
