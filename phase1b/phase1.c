@@ -69,6 +69,9 @@ struct Process {
     Process* zappersNext;
 
     USLOSS_Context context;     // USLOSS context for the init and switches
+
+    int start;                  // start time of the process
+    int totalRuntime;           // total runtime of the process
 };
 
 /**
@@ -111,6 +114,7 @@ void restoreInterrupts();
 void cleanEntry(int idx);
 int slotFinder();
 void addToQueue (Process* proc);
+void removeFromQueue(Process* proc);
 
 // processes
 int init(char* usloss);
@@ -537,7 +541,7 @@ int unblockProc(int pid) {
  */
 int readCurStartTime() {
     kernelCheck("readCurStartTime");
-    return -1;
+    return CurrProcess->start;
 }
 
 /**
@@ -548,7 +552,7 @@ void timeSlice() {
     kernelCheck("timeSlice");
     disableInterrupts();
 
-    if (1) {
+    if ((currentTime() - CurrProcess->start) >= 80000) {
         dispatcher();
     } else {
         restoreInterrupts();
@@ -564,7 +568,7 @@ void timeSlice() {
  */
 int readtime() {
     kernelCheck("readtime");
-    return -1;
+    return CurrProcess->totalRuntime;
 }
 
 /**
@@ -858,4 +862,8 @@ void addToQueue(Process* proc) {
     // have to make it the tail anyways, since it is newly added
      runQueue[slot].last = proc;
      runQueue[slot].size++;
+}
+
+void removeFromQueue(Process* proc) {
+
 }
