@@ -177,11 +177,12 @@ void phase1_init(void) {
 
 /**
  * This function starts the running of processes, changes init from runnable to
- * running. Uses one context switch.
+ * running. Calls the dispatcher.
  */
 void startProcesses(void) {
     CurrProcess->state = RUNNING;
-    USLOSS_ContextSwitch(NULL, &CurrProcess->context);
+    //USLOSS_ContextSwitch(NULL, &CurrProcess->context);
+    dispatcher();
 }
 
 /**
@@ -267,7 +268,7 @@ int fork1(char *name, int(*func)(char *), char *arg, int stacksize, int priority
                        ProcessTable[slot].stSize, NULL, &trampoline);
     
     // add process to run queue
-    addToQueue(&ProcessTable[slot]);
+    addToQueue(&ProcessTable[slot], 'r');
 
     dispatcher();
 
@@ -841,10 +842,11 @@ int slotFinder() {
  * Adds a process to its specific runQueue.
  * 
  * @param proc, Process pointer for the process to add to the queue
+ * @param type, char representing queue type
  */
 void addToQueue(Process* proc) {
     int slot = proc->priority - 1;
-
+    
     // if the queue is empty, just make it the head, otherwise, we add it 
     // to the end (last)
     if (runQueue[slot].first == NULL) {
