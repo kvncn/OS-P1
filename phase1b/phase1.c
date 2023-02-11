@@ -130,7 +130,21 @@ Process ProcessTable[MAXPROC]; // actual Process Table
 Process* CurrProcess;          // current process/running process
 int pidIncrementer;            // takes care of the pid
 int procCount;                 // how many process currently in the table
-Queue runQueue[LOW_PRIORITY];   // the run queues for the specific priorities
+Queue runQueue[LOW_PRIORITY];  // the run queues for the specific priorities
+
+/* Helper function to print out the runQ at any given point*/
+void printRunQ() {
+	for(int i = 0; i < LOW_PRIORITY; i++) {
+		USLOSS_Console("%d (Size %d): ", i, runQueue[i].size);
+		Process* temp = runQueue[i].first;
+		while (temp != NULL) {
+			USLOSS_Console("%d ", temp->PID);
+			temp = temp->runNext;
+		}
+		USLOSS_Console("\n");
+	}
+}
+
 
 /**
  * Bootstarp for the process table and the init process, only populates 
@@ -154,6 +168,8 @@ void phase1_init(void) {
 
     // set currProcess to the init, switch to it, start at init's pid
     pidIncrementer = 1;
+    procCount = 0;
+    CurrProcess = NULL;
 
     startProcesses();
 }
@@ -182,10 +198,8 @@ void startProcesses(void) {
     USLOSS_ContextInit(&ProcessTable[slot].context, ProcessTable[slot].stack, 
                        ProcessTable[slot].stSize, NULL, trampoline);
 
-    // make the init the current process so we can later run it
-    CurrProcess = &ProcessTable[slot];
     // add init to the runQueue
-    addToQueue(CurrProcess);
+    addToQueue(&ProcessTable[slot]);
     dispatcher();
 }
 
@@ -680,11 +694,13 @@ void dispatcher() {
     // MMU Interaction?
     mmu_flush();
 
-    if (CurrProcess != NULL){
+    // if current process is running, switch it to runnable
+    if (CurrProcess != NULL && CurrProcess->state == RUNNING) {
+        CurrProcess->state = RUNNABLE;
+    }
+
+    if (CurrProcess != NULL) {
         CurrProcess->totalRuntime += (currentTime() - CurrProcess->start);
-        // if current process is running, switch it to runnable
-        if (CurrProcess->state == RUNNING)
-            CurrProcess->state = RUNNABLE;
     }
 
     // swapping the chosen process in
@@ -727,9 +743,6 @@ int init(char* usloss) {
     fork1("sentinel", &sentinel, NULL, USLOSS_MIN_STACK, LOW_PRIORITY);
 
     fork1("testcase_main", &testcase_mainProc, NULL, USLOSS_MIN_STACK, 3);
-
-    //dumpProcesses();
-
     int res; 
     // here we have a while true loop to check for possible errors on join 
     // stemming from this process
