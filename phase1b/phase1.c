@@ -400,7 +400,7 @@ void quit(int status) {
 
     if (isZapped()) {
         while (CurrProcess->zappersHead != NULL) {
-            Process* fromZap = removeZapper; // ?? implement removal
+            Process* fromZap = removeZapper(); // ?? implement removal
             fromZap->state = RUNNABLE; 
             addToQueue(fromZap);
         }
@@ -676,7 +676,7 @@ void dispatcher() {
     }
 
     // MMU Interaction?
-    mmu_switch(newProc->PID);
+    //mmu_switch(newProc->PID);
 
     if (CurrProcess != NULL){
         CurrProcess->totalRuntime += (currentTime() - CurrProcess->start);
