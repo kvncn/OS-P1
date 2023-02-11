@@ -946,21 +946,21 @@ void addToQueue(Process* proc) {
  */
 void removeFromQueue(Process* proc) {
     Queue runQueueEntry = runQueue[proc->priority-1];
-    Process* previous = runQueueEntry.head;
+    Process* previous = runQueueEntry.first;
 
     // if this was the only proc in runQueue
     if (previous->runNext == NULL) {
-        runQueueEntry.head = NULL;
-        runQueueEntry.tail = NULL; 
+        runQueueEntry.first = NULL;
+        runQueueEntry.last = NULL; 
     }
 
     // if we need to remove the head
     if (previous == proc) {
-        runQueueEntry.head = previous->runNext;
+        runQueueEntry.first = previous->runNext;
 
         // if the head is also the tail
-        if (runQueueEntry.tail == proc) {
-            runQueueEntry.tail == NULL:
+        if (runQueueEntry.last == proc) {
+            runQueueEntry.last == NULL:
         }
     } else {
         while (previous->runNext != proc) {
@@ -969,8 +969,8 @@ void removeFromQueue(Process* proc) {
 		previous->runNext = proc->runNext;
 
 		// check for tail 
-		if (runQueueEntry.tail == proc) {
-			runQueueEntry.tail = prev;
+		if (runQueueEntry.last == proc) {
+			runQueueEntry.last = previous;
         }
     }
     runQueueEntry.size--;
