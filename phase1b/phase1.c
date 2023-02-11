@@ -215,7 +215,7 @@ int fork1(char *name, int(*func)(char *), char *arg, int stacksize, int priority
 
     // problem with args or num processes, maybe out of priority
     if (name == NULL || strlen(name) > MAXNAME || func == NULL || 
-        priority >= LOW_PRIORITY-1 || priority < HIGH_PRIORITY || 
+        priority > LOW_PRIORITY || priority == 6 || priority < HIGH_PRIORITY || 
         procCount == MAXPROC) {
         return -1;
     } 
@@ -721,47 +721,10 @@ int init(char* usloss) {
 	phase3_start_service_processes();
 	phase4_start_service_processes();
 	phase5_start_service_processes();
-    
-    // creating sentinel manually since it is the lowest priority and thus
-    // disallowed by fork, better than changing our fork implementation
-    procCount++;
-    CurrProcess->state = RUNNABLE;
-    int slot = slotFinder();
-    strcpy(ProcessTable[slot].name, "sentinel");
-    
-    ProcessTable[slot].args[0] = '\0';
-    ProcessTable[slot].PID = pidIncrementer;
-    ProcessTable[slot].processMain = &sentinel;
-    ProcessTable[slot].stSize = USLOSS_MIN_STACK;
-    ProcessTable[slot].stack = malloc(USLOSS_MIN_STACK);
-    ProcessTable[slot].priority = LOW_PRIORITY;
-    ProcessTable[slot].state = RUNNABLE;
-    ProcessTable[slot].parent = CurrProcess;
-    ProcessTable[slot].slot = slot;
 
-    CurrProcess->numChildren++;
-    CurrProcess->firstChild = &ProcessTable[slot];
+    fork1("sentinel", &sentinel, NULL, USLOSS_MIN_STACK, LOW_PRIORITY);
 
-    // still need to init the context even though we don't expect it to run
-    USLOSS_ContextInit(&ProcessTable[slot].context, ProcessTable[slot].stack, 
-                       ProcessTable[slot].stSize, NULL, &trampoline);
-    
-    pidIncrementer++;
-
-    addToQueue(&ProcessTable[slot]);
-    
-    USLOSS_Console("Phase 1B TEMPORARY HACK: init() manually switching to testcase_main() after using fork1() to create it.\n");
-
-    // calling fork for testcase_main
     fork1("testcase_main", &testcase_mainProc, NULL, USLOSS_MIN_STACK, 3);
-
-    //Process* old = CurrProcess;
-    //CurrProcess = &ProcessTable[3];
-
-    //CurrProcess->state = RUNNING;
-
-    // start running testcase_main 
-    //USLOSS_ContextSwitch(&old->context, &CurrProcess->context);
 
     int res; 
     // here we have a while true loop to check for possible errors on join 
