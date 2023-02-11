@@ -155,7 +155,15 @@ void phase1_init(void) {
     // set currProcess to the init, switch to it, start at init's pid
     pidIncrementer = 1;
 
-    int slot = slotFinder();
+    startProcesses();
+}
+
+/**
+ * This function starts the running of processes, changes init from runnable to
+ * running. Calls the dispatcher.
+ */
+void startProcesses(void) {
+    int slot = 1;
     
     // fill in the information for setup of init process
     strcpy(ProcessTable[slot].name, "init");
@@ -168,26 +176,16 @@ void phase1_init(void) {
     ProcessTable[slot].state = RUNNABLE;
     procCount++;
 
+    USLOSS_IntVec[USLOSS_CLOCK_INT] = clockHandler;
+
     // create context for init
     USLOSS_ContextInit(&ProcessTable[slot].context, ProcessTable[slot].stack, 
                        ProcessTable[slot].stSize, NULL, trampoline);
 
     // make the init the current process so we can later run it
     CurrProcess = &ProcessTable[slot];
-
-    pidIncrementer++;
-
     // add init to the runQueue
     addToQueue(CurrProcess);
-
-    startProcesses();
-}
-
-/**
- * This function starts the running of processes, changes init from runnable to
- * running. Calls the dispatcher.
- */
-void startProcesses(void) {
     dispatcher();
 }
 
@@ -243,6 +241,8 @@ int fork1(char *name, int(*func)(char *), char *arg, int stacksize, int priority
 
     strcpy(ProcessTable[slot].name, name);
 
+    pidIncrementer++;
+
     // if the arguments for the process were NULL we set it to null char,
     // otherwsie, copy the string
     if (arg == NULL) {
@@ -260,8 +260,6 @@ int fork1(char *name, int(*func)(char *), char *arg, int stacksize, int priority
     ProcessTable[slot].state = RUNNABLE;
     ProcessTable[slot].parent = CurrProcess;
     ProcessTable[slot].slot = slot;
-
-    pidIncrementer++;
 
     // if this is the first child just set it, otherwise we can just get the
     // child reference and update the list pointer
