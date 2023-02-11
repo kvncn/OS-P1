@@ -192,6 +192,8 @@ void startProcesses(void) {
     ProcessTable[slot].state = RUNNABLE;
     procCount++;
 
+    pidIncrementer++;
+
     USLOSS_IntVec[USLOSS_CLOCK_INT] = clockHandler;
 
     // create context for init
@@ -255,8 +257,6 @@ int fork1(char *name, int(*func)(char *), char *arg, int stacksize, int priority
 
     strcpy(ProcessTable[slot].name, name);
 
-    pidIncrementer++;
-
     // if the arguments for the process were NULL we set it to null char,
     // otherwsie, copy the string
     if (arg == NULL) {
@@ -274,6 +274,8 @@ int fork1(char *name, int(*func)(char *), char *arg, int stacksize, int priority
     ProcessTable[slot].state = RUNNABLE;
     ProcessTable[slot].parent = CurrProcess;
     ProcessTable[slot].slot = slot;
+
+    pidIncrementer++;
 
     // if this is the first child just set it, otherwise we can just get the
     // child reference and update the list pointer
@@ -405,7 +407,7 @@ void quit(int status) {
         cleanEntry(CurrProcess->slot);
         procCount--;
     } else {
-        CurrProcess->joinWait++;
+        CurrProcess->parent->joinWait++;
         // if our parent was blocked waiting, notify it and make it runnable
         // again
         if (CurrProcess->parent->state == BLOCKED_JOIN) {
