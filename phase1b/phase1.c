@@ -790,8 +790,7 @@ int testcase_mainProc(char* usloss) {
     if (res != 0) {
         USLOSS_Console("ERROR ON MAIN, need to see testcase for msg");
     }
-    USLOSS_Console("Phase 1B TEMPORARY HACK: testcase_main() returned, simulation will now halt.\n");
-    USLOSS_Halt(0);
+    USLOSS_Halt(res);
     return 0;
 }
 
