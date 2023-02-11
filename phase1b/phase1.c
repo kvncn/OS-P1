@@ -213,12 +213,19 @@ int fork1(char *name, int(*func)(char *), char *arg, int stacksize, int priority
 
     disableInterrupts();
 
-    // problem with args or num processes, maybe out of priority
-    if (name == NULL || strlen(name) > MAXNAME || func == NULL || 
-        priority > LOW_PRIORITY || priority == 6 || priority < HIGH_PRIORITY || 
-        procCount == MAXPROC) {
+    // problem with args or num processes
+    if (name == NULL || strlen(name) > MAXNAME || func == NULL || procCount == MAXPROC) {
         return -1;
     } 
+
+    // check if priority is ok and not sentinel
+    if (priority > LOW_PRIORITY || priority == 6) {
+		return -1;
+	} else if (priority == LOW_PRIORITY && (strcmp(name, "sentinel") != 0)) {
+		return -1;
+	} else if (priority < HIGH_PRIORITY) {
+		return -1;
+	}
 
     // problem with stack size
     if (stacksize < USLOSS_MIN_STACK) {
