@@ -132,6 +132,19 @@ int pidIncrementer;            // takes care of the pid
 int procCount;                 // how many process currently in the table
 Queue runQueue[LOW_PRIORITY];  // the run queues for the specific priorities
 
+/* Helper function to print out the runQ at any given point*/
+void printRunQ() {
+	for(int i = 0; i < LOW_PRIORITY; i++) {
+		USLOSS_Console("%d (Size %d): ", i, runQueue[i].size);
+		Process* temp = runQueue[i].first;
+		while (temp != NULL) {
+			USLOSS_Console("%d ", temp->PID);
+			temp = temp->runNext;
+		}
+		USLOSS_Console("\n");
+	}
+}
+
 /**
  * Bootstarp for the process table and the init process, only populates 
  * the process table with empty processes, so that we can actually init them 
@@ -662,6 +675,8 @@ void dispatcher() {
     disableInterrupts();
     Process* newProc;
 
+    printRunQ();
+
     // When the timeslice is up, we'll take the process back and put it in the RunQ
     if (CurrProcess != NULL && (currentTime() - CurrProcess->start) > 80000) {
         removeFromQueue(CurrProcess);
@@ -680,9 +695,6 @@ void dispatcher() {
         USLOSS_Halt(1);
     }
 
-    // MMU Interaction?
-    mmu_flush();
-
     // if current process is running, switch it to runnable
     if (CurrProcess != NULL && CurrProcess->state == RUNNING) {
         CurrProcess->state = RUNNABLE;
@@ -700,6 +712,9 @@ void dispatcher() {
     CurrProcess->state = RUNNING;
 
     CurrProcess->start = currentTime();
+
+    // MMU Interaction?
+    mmu_flush();
 
     if(oldProcess == NULL)
         USLOSS_ContextSwitch(NULL, &CurrProcess->context);
