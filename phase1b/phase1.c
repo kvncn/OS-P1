@@ -188,8 +188,6 @@ void phase1_init(void) {
  * running. Calls the dispatcher.
  */
 void startProcesses(void) {
-    //CurrProcess->state = RUNNING;
-    //USLOSS_ContextSwitch(NULL, &CurrProcess->context);
     dispatcher();
 }
 
@@ -315,7 +313,6 @@ int join(int *status) {
         return -2;
     }
 
-    // ??
     if (CurrProcess->joinWait == 0) {
         blockProcess(BLOCKED_JOIN);
     }
@@ -732,6 +729,8 @@ int init(char* usloss) {
     fork1("sentinel", &sentinel, NULL, USLOSS_MIN_STACK, LOW_PRIORITY);
 
     fork1("testcase_main", &testcase_mainProc, NULL, USLOSS_MIN_STACK, 3);
+
+    //dumpProcesses();
 
     int res; 
     // here we have a while true loop to check for possible errors on join 
