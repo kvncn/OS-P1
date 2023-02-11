@@ -407,6 +407,9 @@ void quit(int status) {
         }
     }
 
+    // MMU QUIT?
+	mmu_quit(CurrProcess->PID);
+
     CurrProcess = NULL;
     dispatcher();
 }
@@ -634,6 +637,49 @@ int currentTime() {
 void dispatcher() {
     kernelCheck("dispatcher");
     disableInterrupts();
+    Process* newProc;
+
+    // When the timeslice is up, we'll take the process back and put it in the RunQ
+	if (CurrProcess != NULL && (currentTime() - CurrProcess->start) > 80000) {
+		removeFromQueue(CurrProcess);
+		addToQueue(CurrProcess);
+	}
+
+    for (int i = 0; i <= LOW_PRIORITY; i++) {
+		if (runQueue[i].size != 0) {
+			newProcess = runQueue[i].first;
+			break;
+		}
+	}
+
+    if(newProcess == NULL) {
+		USLOSS_Console("Encountered a NULL process in the runQueue\n");
+		USLOSS_Halt(1);
+	}
+
+	// MMU Interaction?
+	mmu_switch(newProc->pid);
+
+	if (CurrProcess != NULL){
+        CurrProcess->totalRuntime += (currentTime() - CurrProcess->s->start);
+        // if current process is running, switch it to runnable
+        if (CurrProcess->state == RUNNING)
+		    CurrProcess->state = RUNNABLE;
+    }
+		
+    // swapping the chosen process in
+	Process* oldProcess = CurrProcess;
+	CurrProcess = newProcess;
+	
+	// Update process states (CAUTION: Might need more)
+	CurrProcess->state = RUNNING;
+
+	CurrProcess->start = currentTime();
+	
+	if(oldProcess == NULL)
+		USLOSS_ContextSwitch(NULL, &CurrProcess->context);
+	else
+		USLOSS_ContextSwitch(&oldProcess->context, &CurrProcess->context);
 
     restoreInterrupts();
 
