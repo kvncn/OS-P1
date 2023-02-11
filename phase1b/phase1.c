@@ -188,7 +188,7 @@ void phase1_init(void) {
  * running. Calls the dispatcher.
  */
 void startProcesses(void) {
-    CurrProcess->state = RUNNING;
+    //CurrProcess->state = RUNNING;
     //USLOSS_ContextSwitch(NULL, &CurrProcess->context);
     dispatcher();
 }
@@ -755,13 +755,13 @@ int init(char* usloss) {
     // calling fork for testcase_main
     fork1("testcase_main", &testcase_mainProc, NULL, USLOSS_MIN_STACK, 3);
 
-    Process* old = CurrProcess;
-    CurrProcess = &ProcessTable[3];
+    //Process* old = CurrProcess;
+    //CurrProcess = &ProcessTable[3];
 
-    CurrProcess->state = RUNNING;
+    //CurrProcess->state = RUNNING;
 
     // start running testcase_main 
-    USLOSS_ContextSwitch(&old->context, &CurrProcess->context);
+    //USLOSS_ContextSwitch(&old->context, &CurrProcess->context);
 
     int res; 
     // here we have a while true loop to check for possible errors on join 
