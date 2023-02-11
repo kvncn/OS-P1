@@ -29,6 +29,7 @@
 #define RUNNING 1       // means the process is currently running
 #define DEAD 2          // means the process quit
 #define BLOCKED_JOIN 3  // means the process was blocked in a join
+#define BLOCKED_ZAP 4   // means the process was blocked in a zap
 #define FREE 9          // means the slot is free
 
 // ---- typedefs
@@ -65,8 +66,8 @@ struct Process {
     Process* runNext;           // next pointer for the run queue
 
     int zappers;                // number of processes wanting to zap this
-    Process* zappersHead;
-    Process* zappersNext;
+    Process* zappersHead;       // first zapper
+    Process* zappersNext;       // subsequent zappers
 
     USLOSS_Context context;     // USLOSS context for the init and switches
 
@@ -115,6 +116,9 @@ void cleanEntry(int idx);
 int slotFinder();
 void addToQueue (Process* proc);
 void removeFromQueue(Process* proc);
+void addZapper(Process* proc);
+Process* removeZapper();
+void blockProcess(int code);
 
 // processes
 int init(char* usloss);
@@ -126,7 +130,20 @@ Process ProcessTable[MAXPROC]; // actual Process Table
 Process* CurrProcess;          // current process/running process
 int pidIncrementer;            // takes care of the pid
 int procCount;                 // how many process currently in the table
-Queue runQueue[LOW_PRIORITY];   // the run queues for the specific priorities
+Queue runQueue[LOW_PRIORITY];  // the run queues for the specific priorities
+
+/* Helper function to print out the runQ at any given point*/
+void printRunQ() {
+	for(int i = 0; i < LOW_PRIORITY; i++) {
+		USLOSS_Console("%d (Size %d): ", i, runQueue[i].size);
+		Process* temp = runQueue[i].first;
+		while (temp != NULL) {
+			USLOSS_Console("%d ", temp->PID);
+			temp = temp->runNext;
+		}
+		USLOSS_Console("\n");
+	}
+}
 
 /**
  * Bootstarp for the process table and the init process, only populates 
@@ -150,8 +167,18 @@ void phase1_init(void) {
 
     // set currProcess to the init, switch to it, start at init's pid
     pidIncrementer = 1;
+    procCount = 0;
+    CurrProcess = NULL;
 
-    int slot = slotFinder();
+    startProcesses();
+}
+
+/**
+ * This function starts the running of processes, changes init from runnable to
+ * running. Calls the dispatcher.
+ */
+void startProcesses(void) {
+    int slot = 1;
     
     // fill in the information for setup of init process
     strcpy(ProcessTable[slot].name, "init");
@@ -162,19 +189,19 @@ void phase1_init(void) {
     ProcessTable[slot].stack = malloc(USLOSS_MIN_STACK);
     ProcessTable[slot].priority = 6;
     ProcessTable[slot].state = RUNNABLE;
+    ProcessTable[slot].slot = slot;
     procCount++;
+
+    pidIncrementer++;
+
+    USLOSS_IntVec[USLOSS_CLOCK_INT] = clockHandler;
 
     // create context for init
     USLOSS_ContextInit(&ProcessTable[slot].context, ProcessTable[slot].stack, 
                        ProcessTable[slot].stSize, NULL, trampoline);
 
-    // make the init the current process so we can later run it
-    CurrProcess = &ProcessTable[slot];
-
-    pidIncrementer++;
-
     // add init to the runQueue
-    addToQueue(CurrProcess);
+    addToQueue(&ProcessTable[slot]);
 
     // Clock Interrupt Handler ???
 	USLOSS_IntVec[USLOSS_CLOCK_INT] = clockHandler;	
@@ -189,6 +216,7 @@ void phase1_init(void) {
 void startProcesses(void) {
     CurrProcess->state = RUNNING;
     //USLOSS_ContextSwitch(NULL, &CurrProcess->context);
+    addToQueue(&ProcessTable[slot]);
     dispatcher();
 }
 
@@ -212,12 +240,19 @@ int fork1(char *name, int(*func)(char *), char *arg, int stacksize, int priority
 
     disableInterrupts();
 
-    // problem with args or num processes, maybe out of priority
-    if (name == NULL || strlen(name) > MAXNAME || func == NULL || 
-        priority >= LOW_PRIORITY-1 || priority < HIGH_PRIORITY || 
-        procCount == MAXPROC) {
+    // problem with args or num processes
+    if (name == NULL || strlen(name) > MAXNAME || func == NULL || procCount == MAXPROC) {
         return -1;
     } 
+
+    // check if priority is ok and not sentinel
+    if (priority > LOW_PRIORITY || priority == 6) {
+		return -1;
+	} else if (priority == LOW_PRIORITY && (strcmp(name, "sentinel") != 0)) {
+		return -1;
+	} else if (priority < HIGH_PRIORITY) {
+		return -1;
+	}
 
     // problem with stack size
     if (stacksize < USLOSS_MIN_STACK) {
@@ -279,7 +314,7 @@ int fork1(char *name, int(*func)(char *), char *arg, int stacksize, int priority
 	mmu_init_proc(ProcessTable[slot].PID);
 
     // add process to run queue
-    addToQueue(&ProcessTable[slot], 'r');
+    addToQueue(&ProcessTable[slot]);
 
     dispatcher();
 
@@ -309,9 +344,8 @@ int join(int *status) {
         return -2;
     }
 
-    // ??
     if (CurrProcess->joinWait == 0) {
-        blockProccess(BLOCKED_JOIN);
+        blockProcess(BLOCKED_JOIN);
     }
 
     // remove dead child
@@ -383,14 +417,14 @@ void quit(int status) {
     CurrProcess->state = DEAD;
     CurrProcess->exitState = status;
 
-    // ?? remove it from runQueue
+    removeFromQueue(CurrProcess);
 
     // if there is no parent to notify, just don't
     if (CurrProcess->parent == NULL) {
         cleanEntry(CurrProcess->slot);
         procCount--;
     } else {
-        CurrProcess->joinWait++;
+        CurrProcess->parent->joinWait++;
         // if our parent was blocked waiting, notify it and make it runnable
         // again
         if (CurrProcess->parent->state == BLOCKED_JOIN) {
@@ -401,7 +435,7 @@ void quit(int status) {
 
     if (isZapped()) {
         while (CurrProcess->zappersHead != NULL) {
-            Process* fromZap = NULL; // ?? implement removal
+            Process* fromZap = removeZapper(); // ?? implement removal
             fromZap->state = RUNNABLE; 
             addToQueue(fromZap);
         }
@@ -434,7 +468,7 @@ void zap(int pid) {
 		USLOSS_Console("ERROR: Attempt to zap() init.\n");
 		USLOSS_Halt(1);
 	}
-	if (pid == currentProcess->pid) {
+	if (pid == CurrProcess->PID) {
 		USLOSS_Console("ERROR: Attempt to zap() itself.\n");
 		USLOSS_Halt(1);
 	}
@@ -451,8 +485,8 @@ void zap(int pid) {
 		USLOSS_Halt(1);
     }
 
-
-
+    addZapper(toZap);
+    blockProcess(BLOCKED_ZAP);
 
     restoreInterrupts();
 }
@@ -522,7 +556,14 @@ void blockMe(int block_status) {
     kernelCheck("blockMe");
     disableInterrupts();
 
+    if (block_status < 10) {
+        USLOSS_Console("blockMe status has to be greater than 10, instead got %d\n", block_status);
+		USLOSS_Halt(1);
+    }
+
     restoreInterrupts();
+
+    return blockProcess(block_status);
 
 }
 
@@ -538,6 +579,21 @@ void blockMe(int block_status) {
 int unblockProc(int pid) {
     kernelCheck("blockMe");
     disableInterrupts();
+
+    Process* toUnblock = &ProcessTable[pid % MAXPROC];
+
+    // process to unblock is non existent
+    if (toUnblock->state == 0 || toUnblock->PID != pid) {
+        return -2;
+    } else if (toUnblock->state <= 10) {
+        return -2;
+    }
+
+    // to unblock it, simply add it back to runQueue
+    addToQueue(toUnblock);
+    // make it runnable 
+    toUnblock->state = RUNNABLE;
+
     dispatcher();
     restoreInterrupts();
     return 0;
@@ -675,6 +731,9 @@ void dispatcher() {
 	CurrProcess->state = RUNNING;
 
 	CurrProcess->start = currentTime();
+
+    // MMU Interaction?
+    mmu_flush();
 	
 	if(oldProcess == NULL)
 		USLOSS_ContextSwitch(NULL, &CurrProcess->context);
@@ -703,48 +762,10 @@ int init(char* usloss) {
 	phase3_start_service_processes();
 	phase4_start_service_processes();
 	phase5_start_service_processes();
-    
-    // creating sentinel manually since it is the lowest priority and thus
-    // disallowed by fork, better than changing our fork implementation
-    procCount++;
-    CurrProcess->state = RUNNABLE;
-    int slot = slotFinder();
-    strcpy(ProcessTable[slot].name, "sentinel");
-    
-    ProcessTable[slot].args[0] = '\0';
-    ProcessTable[slot].PID = pidIncrementer;
-    ProcessTable[slot].processMain = &sentinel;
-    ProcessTable[slot].stSize = USLOSS_MIN_STACK;
-    ProcessTable[slot].stack = malloc(USLOSS_MIN_STACK);
-    ProcessTable[slot].priority = LOW_PRIORITY;
-    ProcessTable[slot].state = RUNNABLE;
-    ProcessTable[slot].parent = CurrProcess;
-    ProcessTable[slot].slot = slot;
 
-    CurrProcess->numChildren++;
-    CurrProcess->firstChild = &ProcessTable[slot];
+    fork1("sentinel", &sentinel, NULL, USLOSS_MIN_STACK, LOW_PRIORITY);
 
-    // still need to init the context even though we don't expect it to run
-    USLOSS_ContextInit(&ProcessTable[slot].context, ProcessTable[slot].stack, 
-                       ProcessTable[slot].stSize, NULL, &trampoline);
-    
-    pidIncrementer++;
-
-    addToQueue(&ProcessTable[slot]);
-    
-    USLOSS_Console("Phase 1B TEMPORARY HACK: init() manually switching to testcase_main() after using fork1() to create it.\n");
-
-    // calling fork for testcase_main
     fork1("testcase_main", &testcase_mainProc, NULL, USLOSS_MIN_STACK, 3);
-
-    Process* old = CurrProcess;
-    CurrProcess = &ProcessTable[3];
-
-    CurrProcess->state = RUNNING;
-
-    // start running testcase_main 
-    USLOSS_ContextSwitch(&old->context, &CurrProcess->context);
-
     int res; 
     // here we have a while true loop to check for possible errors on join 
     // stemming from this process
@@ -790,8 +811,7 @@ int testcase_mainProc(char* usloss) {
     if (res != 0) {
         USLOSS_Console("ERROR ON MAIN, need to see testcase for msg");
     }
-    USLOSS_Console("Phase 1B TEMPORARY HACK: testcase_main() returned, simulation will now halt.\n");
-    USLOSS_Halt(0);
+    USLOSS_Halt(res);
     return 0;
 }
 
@@ -864,7 +884,12 @@ void cleanEntry(int idx) {
     ProcessTable[idx].firstSibling = NULL;
     ProcessTable[idx].exitState = 0;
     ProcessTable[idx].slot = 0;
-    ProcessTable[idx].joinWait = 0;
+    ProcessTable[idx].zappers = 0;
+    ProcessTable[idx].zappersHead = NULL;
+    ProcessTable[idx].zappersNext = NULL;
+    ProcessTable[idx].start = 0;
+    ProcessTable[idx].totalRuntime = 0;
+    ProcessTable[idx].runNext = NULL;
 }
 
 /**
@@ -899,7 +924,6 @@ int slotFinder() {
  * Adds a process to its specific runQueue.
  * 
  * @param proc, Process pointer for the process to add to the queue
- * @param type, char representing queue type
  */
 void addToQueue(Process* proc) {
     int slot = proc->priority - 1;
@@ -916,7 +940,96 @@ void addToQueue(Process* proc) {
      runQueue[slot].last = proc;
      runQueue[slot].size++;
 }
-
+/**
+ * Removes a process from its specific runQueue.
+ * 
+ * @param proc, Process pointer for the process to be removed 
+ * from the queue
+ */
 void removeFromQueue(Process* proc) {
+    Queue runQueueEntry = runQueue[proc->priority-1];
+    Process* previous = runQueueEntry.first;
 
+    // if this was the only proc in runQueue
+    if (previous->runNext == NULL) {
+        runQueueEntry.first = NULL;
+        runQueueEntry.last = NULL; 
+    }
+
+    // if we need to remove the head
+    if (previous == proc) {
+        runQueueEntry.first = previous->runNext;
+
+        // if the head is also the tail
+        if (runQueueEntry.last == proc) {
+            runQueueEntry.last == NULL;
+        }
+    } else {
+        while (previous->runNext != proc) {
+			previous = previous->runNext;
+		}
+		previous->runNext = proc->runNext;
+
+		// check for tail 
+		if (runQueueEntry.last == proc) {
+			runQueueEntry.last = previous;
+        }
+    }
+    runQueueEntry.size--;
+}
+
+/**
+ * Adds the currProcess' to the proc zappers.
+ * 
+ * @param proc, Process pointer indicating the 
+ * process we want to add the zapper to  
+ */
+void addZapper(Process* proc){
+    proc->zappers++;
+    // since we incremented, this means we actually have
+    // none
+    if (proc->zappers == 1) {
+        proc->zappersHead = CurrProcess;
+        return;
+    }
+
+     // adding to head
+    Process* cur = proc->zappersHead;
+    CurrProcess->zappersNext = cur;
+    proc->zappersHead = CurrProcess;
+}
+
+/**
+ * Removed the first zapper. 
+ * 
+ * @return proc, Process pointer indicating the 
+ * process we removed from Curr's zappers
+ */
+Process* removeZapper() {
+    Process* result = CurrProcess->zappersHead;
+
+    CurrProcess->zappersHead = CurrProcess->zappersHead->zappersNext;
+
+    CurrProcess->zappers--; 
+
+    return result;
+}
+
+/**
+ * Blocks current process with the given code. 
+ * 
+ * @param code, blocking code so we know the process'
+ * status
+ * 
+ * @return int, 0 if block was successful
+ */
+void blockProcess(int code) {
+    CurrProcess->state = code;
+
+    // remove from runQueue to block
+    removeFromQueue(CurrProcess);
+
+    dispatcher();
+
+    return 0;
 }
