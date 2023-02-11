@@ -677,6 +677,7 @@ void dispatcher() {
 
     // MMU Interaction?
     //mmu_switch(newProc->PID);
+    mmu_flush();
 
     if (CurrProcess != NULL){
         CurrProcess->totalRuntime += (currentTime() - CurrProcess->start);
