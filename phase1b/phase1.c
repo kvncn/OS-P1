@@ -278,7 +278,7 @@ int fork1(char *name, int(*func)(char *), char *arg, int stacksize, int priority
     mmu_init_proc(ProcessTable[slot].PID);
 
     // add process to run queue
-    addToQueue(&ProcessTable[slot], 'r');
+    addToQueue(&ProcessTable[slot]);
 
     dispatcher();
 
@@ -430,7 +430,7 @@ void zap(int pid) {
 		USLOSS_Console("ERROR: Attempt to zap() init.\n");
 		USLOSS_Halt(1);
 	}
-	if (pid == currentProcess->pid) {
+	if (pid == CurrProcess->PID) {
 		USLOSS_Console("ERROR: Attempt to zap() itself.\n");
 		USLOSS_Halt(1);
 	}
@@ -552,7 +552,7 @@ int unblockProc(int pid) {
     }
 
     // to unblock it, simply add it back to runQueue
-    addToQueue(toUnblock)
+    addToQueue(toUnblock);
     // make it runnable 
     toUnblock->state = RUNNABLE;
 
@@ -665,21 +665,21 @@ void dispatcher() {
 
     for (int i = 0; i <= LOW_PRIORITY; i++) {
         if (runQueue[i].size != 0) {
-            newProcess = runQueue[i].first;
+            newProc = runQueue[i].first;
             break;
         }
     }
 
-    if(newProcess == NULL) {
+    if(newProc == NULL) {
         USLOSS_Console("Encountered a NULL process in the runQueue\n");
         USLOSS_Halt(1);
     }
 
     // MMU Interaction?
-    mmu_switch(newProc->pid);
+    mmu_switch(newProc->PID);
 
     if (CurrProcess != NULL){
-        CurrProcess->totalRuntime += (currentTime() - CurrProcess->s->start);
+        CurrProcess->totalRuntime += (currentTime() - CurrProcess->start);
         // if current process is running, switch it to runnable
         if (CurrProcess->state == RUNNING)
             CurrProcess->state = RUNNABLE;
@@ -687,7 +687,7 @@ void dispatcher() {
 
     // swapping the chosen process in
     Process* oldProcess = CurrProcess;
-    CurrProcess = newProcess;
+    CurrProcess = newProc;
 
     // Update process states (CAUTION: Might need more)
     CurrProcess->state = RUNNING;
@@ -960,7 +960,7 @@ void removeFromQueue(Process* proc) {
 
         // if the head is also the tail
         if (runQueueEntry.last == proc) {
-            runQueueEntry.last == NULL:
+            runQueueEntry.last == NULL;
         }
     } else {
         while (previous->runNext != proc) {
