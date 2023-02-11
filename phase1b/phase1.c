@@ -176,6 +176,9 @@ void phase1_init(void) {
     // add init to the runQueue
     addToQueue(CurrProcess);
 
+    // Clock Interrupt Handler ???
+	USLOSS_IntVec[USLOSS_CLOCK_INT] = clockHandler;	
+
     startProcesses();
 }
 
@@ -271,6 +274,10 @@ int fork1(char *name, int(*func)(char *), char *arg, int stacksize, int priority
     USLOSS_ContextInit(&ProcessTable[slot].context, ProcessTable[slot].stack, 
                        ProcessTable[slot].stSize, NULL, &trampoline);
     
+    // Currently a dummy MMU Interaction, but 
+    // when Phase 5 is implemented, the MMU can create a new page table
+	mmu_init_proc(ProcessTable[slot].PID);
+
     // add process to run queue
     addToQueue(&ProcessTable[slot], 'r');
 
