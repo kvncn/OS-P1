@@ -132,20 +132,6 @@ int pidIncrementer;            // takes care of the pid
 int procCount;                 // how many process currently in the table
 Queue runQueue[LOW_PRIORITY];  // the run queues for the specific priorities
 
-/* Helper function to print out the runQ at any given point*/
-void printRunQ() {
-	for(int i = 0; i < LOW_PRIORITY; i++) {
-		USLOSS_Console("%d (Size %d): ", i, runQueue[i].size);
-		Process* temp = runQueue[i].first;
-		while (temp != NULL) {
-			USLOSS_Console("%d ", temp->PID);
-			temp = temp->runNext;
-		}
-		USLOSS_Console("\n");
-	}
-}
-
-
 /**
  * Bootstarp for the process table and the init process, only populates 
  * the process table with empty processes, so that we can actually init them 
@@ -190,6 +176,7 @@ void startProcesses(void) {
     ProcessTable[slot].stack = malloc(USLOSS_MIN_STACK);
     ProcessTable[slot].priority = 6;
     ProcessTable[slot].state = RUNNABLE;
+    ProcessTable[slot].slot = slot;
     procCount++;
 
     pidIncrementer++;
