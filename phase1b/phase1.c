@@ -367,9 +367,8 @@ int join(int *status) {
     int res = removed->PID;
     int slot = removed->slot;
 
-    procCount--;
-
     cleanEntry(slot);
+    procCount--;
 
     restoreInterrupts();
 
@@ -399,7 +398,7 @@ void quit(int status) {
     // make this process dead and store exit status
     CurrProcess->state = DEAD;
     CurrProcess->exitState = status;
-
+   
     removeFromQueue(CurrProcess);
 
     // if there is no parent to notify, just don't
@@ -415,10 +414,9 @@ void quit(int status) {
             addToQueue(CurrProcess->parent);
         }
     }
-
     if (isZapped()) {
         while (CurrProcess->zappersHead != NULL) {
-            Process* fromZap = removeZapper(); // ?? implement removal
+            Process* fromZap = removeZapper();
             fromZap->state = RUNNABLE; 
             addToQueue(fromZap);
         }
@@ -869,6 +867,8 @@ void cleanEntry(int idx) {
     ProcessTable[idx].start = 0;
     ProcessTable[idx].totalRuntime = 0;
     ProcessTable[idx].runNext = NULL;
+
+    procCount--;
 }
 
 /**
@@ -926,22 +926,21 @@ void addToQueue(Process* proc) {
  * from the queue
  */
 void removeFromQueue(Process* proc) {
-    Queue runQueueEntry = runQueue[proc->priority-1];
-    Process* previous = runQueueEntry.first;
+    Process* previous = runQueue[proc->priority-1].first;
 
     // if this was the only proc in runQueue
     if (previous->runNext == NULL) {
-        runQueueEntry.first = NULL;
-        runQueueEntry.last = NULL; 
+        runQueue[proc->priority-1].first = NULL;
+        runQueue[proc->priority-1].last = NULL; 
     }
 
     // if we need to remove the head
     if (previous == proc) {
-        runQueueEntry.first = previous->runNext;
+        runQueue[proc->priority-1].first = previous->runNext;
 
         // if the head is also the tail
-        if (runQueueEntry.last == proc) {
-            runQueueEntry.last == NULL;
+        if (runQueue[proc->priority-1].last == proc) {
+            runQueue[proc->priority-1].last == NULL;
         }
     } else {
         while (previous->runNext != proc) {
@@ -950,11 +949,11 @@ void removeFromQueue(Process* proc) {
 		previous->runNext = proc->runNext;
 
 		// check for tail 
-		if (runQueueEntry.last == proc) {
-			runQueueEntry.last = previous;
+		if (runQueue[proc->priority-1].last == proc) {
+			runQueue[proc->priority-1].last = previous;
         }
     }
-    runQueueEntry.size--;
+    runQueue[proc->priority-1].size--;
 }
 
 /**
