@@ -539,7 +539,7 @@ void blockMe(int block_status) {
     kernelCheck("blockMe");
     disableInterrupts();
 
-    if (block_status < 10) {
+    if (block_status <= 10) {
         USLOSS_Console("blockMe status has to be greater than 10, instead got %d\n", block_status);
 		USLOSS_Halt(1);
     }
