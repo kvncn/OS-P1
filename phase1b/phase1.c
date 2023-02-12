@@ -678,7 +678,7 @@ int currentTime() {
 void dispatcher() {
     kernelCheck("dispatcher");
     disableInterrupts();
-    Process* newProc;
+    Process* newProcess;
 
     // When the timeslice is up, we'll take the process back and put it in the RunQ
     if (CurrProcess != NULL && (currentTime() - CurrProcess->start) > 80000) {
@@ -699,7 +699,7 @@ void dispatcher() {
 	}
 
 	// MMU Interaction?
-	mmu_switch(newProc->PID);
+	mmu_switch(newProcess->PID);
 
 	if (CurrProcess != NULL){
         CurrProcess->totalRuntime += (currentTime() - CurrProcess->start);
