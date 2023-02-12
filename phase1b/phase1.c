@@ -511,7 +511,9 @@ void dumpProcesses(void) {
             USLOSS_Console("Blocked(waiting for child to quit)\n");
         else if (slot->state == BLOCKED_ZAP)
             USLOSS_Console("Blocked(waiting for zap target to quit)\n");
-        else
+        else if (slot->state > 10)
+            USLOSS_Console("Blocked(%d)\n", slot->state);
+        else 
             USLOSS_Console("Terminated(%d)\n", slot->exitState);
     }
 }
@@ -1011,5 +1013,5 @@ void blockProcess(int code) {
 
     dispatcher();
 
-    return 0;
+    return code;
 }
