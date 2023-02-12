@@ -507,6 +507,8 @@ void dumpProcesses(void) {
         else if (slot->state == RUNNABLE)
             USLOSS_Console("Runnable\n");
         else if (slot->state == BLOCKED_JOIN)
+            USLOSS_Console("Blocked(waiting for child to quit)\n");
+        else if (slot->state == BLOCKED_ZAP)
             USLOSS_Console("Blocked(waiting for zap target to quit)\n");
         else
             USLOSS_Console("Terminated(%d)\n", slot->exitState);
