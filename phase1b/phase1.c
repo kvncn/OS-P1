@@ -506,6 +506,8 @@ void dumpProcesses(void) {
             USLOSS_Console("Running\n");
         else if (slot->state == RUNNABLE)
             USLOSS_Console("Runnable\n");
+        else if (slot->state == BLOCKED_JOIN)
+            USLOSS_Console("Blocked(waiting for zap target to quit)\n");
         else
             USLOSS_Console("Terminated(%d)\n", slot->exitState);
     }
@@ -766,7 +768,7 @@ int init(char* usloss) {
 int sentinel(char* usloss) {
     while (1) {
         if (phase2_check_io() == 0)
-            USLOSS_Console("DEADLOCK!!!!! need to see testcase for specific msg");
+            USLOSS_Console("DEADLOCK DETECTED!  All of the processes have blocked, but I/O is not ongoing.\n");
             USLOSS_Halt(DEADLOCK_CODE);
         USLOSS_WaitInt();
     }
