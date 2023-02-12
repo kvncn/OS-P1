@@ -202,21 +202,6 @@ void startProcesses(void) {
 
     // add init to the runQueue
     addToQueue(&ProcessTable[slot]);
-
-    // Clock Interrupt Handler ???
-	USLOSS_IntVec[USLOSS_CLOCK_INT] = clockHandler;	
-
-    startProcesses();
-}
-
-/**
- * This function starts the running of processes, changes init from runnable to
- * running. Calls the dispatcher.
- */
-void startProcesses(void) {
-    CurrProcess->state = RUNNING;
-    //USLOSS_ContextSwitch(NULL, &CurrProcess->context);
-    addToQueue(&ProcessTable[slot]);
     dispatcher();
 }
 
@@ -696,17 +681,17 @@ void dispatcher() {
     Process* newProc;
 
     // When the timeslice is up, we'll take the process back and put it in the RunQ
-	if (CurrProcess != NULL && (currentTime() - CurrProcess->start) > 80000) {
-		removeFromQueue(CurrProcess);
-		addToQueue(CurrProcess);
-	}
+    if (CurrProcess != NULL && (currentTime() - CurrProcess->start) > 80000) {
+	    removeFromQueue(CurrProcess);
+	    addToQueue(CurrProcess);
+    }
 
     for (int i = 0; i <= LOW_PRIORITY; i++) {
-		if (runQueue[i].size != 0) {
-			newProcess = runQueue[i].first;
-			break;
-		}
-	}
+	    if (runQueue[i].size != 0) {
+		    newProcess = runQueue[i].first;
+		    break;
+	    }
+    }
 
     if(newProcess == NULL) {
 		USLOSS_Console("Encountered a NULL process in the runQueue\n");
@@ -811,6 +796,7 @@ int testcase_mainProc(char* usloss) {
     if (res != 0) {
         USLOSS_Console("ERROR ON MAIN, need to see testcase for msg");
     }
+    USLOSS_Console("Phase 1B TEMPORARY HACK: testcase_main() returned, simulation will now halt.\n");
     USLOSS_Halt(res);
     return 0;
 }
