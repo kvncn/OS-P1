@@ -360,7 +360,7 @@ int join(int *status) {
     // clean up the dead children after reading its exit status
     CurrProcess->numChildren--;
 
-    CurrProcess->joinWait--;
+    CurrProcess->joinWait -= 1;
 
     *status = removed->exitState;
 
@@ -389,6 +389,7 @@ void quit(int status) {
     // no need to restore interrupts, leave this to the trampoline
     disableInterrupts();
 
+    //USLOSS_Console("CurrProcess Join wait %d\n", CurrProcess->joinWait);
     // if parent dies before all children, halt sim
     if (CurrProcess->numChildren > 0 || CurrProcess->joinWait > 1) {
         USLOSS_Console("ERROR: Process pid %d called quit() while it still had children.\n", CurrProcess->PID);
@@ -406,7 +407,7 @@ void quit(int status) {
         cleanEntry(CurrProcess->slot);
         procCount--;
     } else {
-        CurrProcess->parent->joinWait++;
+        CurrProcess->parent->joinWait += 1;
         // if our parent was blocked waiting, notify it and make it runnable
         // again
         if (CurrProcess->parent->state == BLOCKED_JOIN) {
@@ -871,6 +872,7 @@ void cleanEntry(int idx) {
     ProcessTable[idx].start = 0;
     ProcessTable[idx].totalRuntime = 0;
     ProcessTable[idx].runNext = NULL;
+    ProcessTable[idx].joinWait = 0;
 
     procCount--;
 }
