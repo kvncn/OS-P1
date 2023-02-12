@@ -944,7 +944,7 @@ void removeFromQueue(Process* proc) {
 
         // if the head is also the tail
         if (runQueue[proc->priority-1].last == proc) {
-            runQueue[proc->priority-1].last == NULL;
+            runQueue[proc->priority-1].last = NULL;
         }
     } else {
         while (previous->runNext != proc) {
