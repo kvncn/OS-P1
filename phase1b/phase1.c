@@ -823,10 +823,6 @@ void trampoline() {
     CurrProcess->state = RUNNING;
     // call the process' main func, with its own args
     int res = CurrProcess->processMain(CurrProcess->args);
-    
-    // we don;t ever want to return, so if we actually get here we halt the
-    // simulation with an error
-    USLOSS_Halt(2);
 
     // exit the current process
     quit(res);
