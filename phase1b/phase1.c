@@ -702,7 +702,7 @@ void dispatcher() {
 	mmu_switch(newProc->PID);
 
 	if (CurrProcess != NULL){
-        CurrProcess->totalRuntime += (currentTime() - CurrProcess->s->start);
+        CurrProcess->totalRuntime += (currentTime() - CurrProcess->start);
         // if current process is running, switch it to runnable
         if (CurrProcess->state == RUNNING)
 		    CurrProcess->state = RUNNABLE;
@@ -718,7 +718,7 @@ void dispatcher() {
 	CurrProcess->start = currentTime();
 
     // MMU Interaction?
-    mmu_flush();
+    //mmu_flush();
 	
 	if(oldProcess == NULL)
 		USLOSS_ContextSwitch(NULL, &CurrProcess->context);
