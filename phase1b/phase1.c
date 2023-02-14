@@ -591,7 +591,7 @@ void timeSlice() {
     disableInterrupts();
 
     if ((currentTime() - CurrProcess->start) >= 80000) {
-        dispatcher();
+        removeFromQueue(CurrProcess);
     } else {
         restoreInterrupts();
     }
@@ -667,7 +667,7 @@ void dispatcher() {
     disableInterrupts();
     Process* newProc;
 
-    // When the timeslice is up, we'll take the process back and put it in the RunQ
+    //When the timeslice is up, we'll take the process back and put it in the RunQ
     if (CurrProcess != NULL && (currentTime() - CurrProcess->start) > 80000) {
         removeFromQueue(CurrProcess);
         addToQueue(CurrProcess);
