@@ -566,7 +566,6 @@ int unblockProc(int pid) {
     // make it runnable 
     toUnblock->state = RUNNABLE;
 
-    dispatcher();
     restoreInterrupts();
     return 0;
 }
